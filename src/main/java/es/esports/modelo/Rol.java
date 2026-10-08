@@ -1,4 +1,5 @@
 package es.esports.modelo;
 
-public class Rol {
+public enum Rol {
+    TOP,JGL,MID,ADC,SUPP,CENTINELA,INICIADOR,DUELISTA,CONTROLADOR
 }

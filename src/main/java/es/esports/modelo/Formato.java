@@ -1,4 +1,5 @@
 package es.esports.modelo;
 
-public class Formato {
+public enum Formato {
+    BO1, BO3,BO5
 }
