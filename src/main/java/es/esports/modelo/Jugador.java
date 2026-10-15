@@ -24,11 +24,11 @@ public class Jugador {
         if(juego == Juego.League_of_Legends){
             switch (rol1){
                 case TOP,JGL,MID,ADC,SUPP -> this.rol1 = rol1;
-                case CONTROLADOR,CENTINELA,DUELISTA,INICIADOR -> throw RolInvalidoException("Ese rol no es de League of Legends");
+                case CONTROLADOR,CENTINELA,DUELISTA,INICIADOR -> throw new RolInvalidoException("Ese rol no es de League of Legends");
             }
         }else{
             switch (rol1){
-                case TOP,JGL,MID,ADC,SUPP -> throw RolInvalidoException("Ese rol no es de Valorant");;
+                case TOP,JGL,MID,ADC,SUPP -> throw new RolInvalidoException("Ese rol no es de Valorant");;
                 case CONTROLADOR,CENTINELA,DUELISTA,INICIADOR -> this.rol1 = rol1;
             }
 
@@ -37,11 +37,11 @@ public class Jugador {
         if(juego == Juego.League_of_Legends){
             switch (rol2){
                 case TOP,JGL,MID,ADC,SUPP -> this.rol2 = rol2;
-                case CONTROLADOR,CENTINELA,DUELISTA,INICIADOR -> throw RolInvalidoException("Ese rol no es de League of Legends");
+                case CONTROLADOR,CENTINELA,DUELISTA,INICIADOR -> throw new RolInvalidoException("Ese rol no es de League of Legends");
             }
         }else{
             switch (rol2){
-                case TOP,JGL,MID,ADC,SUPP -> throw RolInvalidoException("Ese rol no es de Valorant");;
+                case TOP,JGL,MID,ADC,SUPP -> throw new RolInvalidoException("Ese rol no es de Valorant");;
                 case CONTROLADOR,CENTINELA,DUELISTA,INICIADOR -> this.rol2 = rol2;
             }
 
@@ -59,11 +59,11 @@ public class Jugador {
         if(juego == Juego.League_of_Legends){
             switch (rol1){
                 case TOP,JGL,MID,ADC,SUPP -> this.rol1 = rol1;
-                case CONTROLADOR,CENTINELA,DUELISTA,INICIADOR -> throw RolInvalidoException("Ese rol no es de League of Legends");
+                case CONTROLADOR,CENTINELA,DUELISTA,INICIADOR -> throw new RolInvalidoException("Ese rol no es de League of Legends");
             }
         }else{
             switch (rol1){
-                case TOP,JGL,MID,ADC,SUPP -> throw RolInvalidoException("Ese rol no es de Valorant");;
+                case TOP,JGL,MID,ADC,SUPP -> throw new RolInvalidoException("Ese rol no es de Valorant");;
                 case CONTROLADOR,CENTINELA,DUELISTA,INICIADOR -> this.rol1 = rol1;
             }
 
