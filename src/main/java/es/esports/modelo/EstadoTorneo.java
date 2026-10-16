@@ -1,4 +1,5 @@
 package es.esports.modelo;
 
-public class EstadoTorneo {
+public enum EstadoTorneo {
+    ACTIVO,FINALIZADO,PREPARACION
 }

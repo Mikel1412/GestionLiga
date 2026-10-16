@@ -1,5 +1,6 @@
 package es.esports.excepciones.reglaNegocioException;
 
+public class JuegoIncompatibleException extends Exception {
 //Lanzaremos esta excepcion cuando intentemos incribir a un equipo cuyo
 // juego no corresponde con el juego del torneo
 
