@@ -1,5 +1,9 @@
 package es.esports.modelo;
 
+import es.esports.excepciones.reglaNegocioException.EquipoYaInscritoException;
+import es.esports.excepciones.reglaNegocioException.JuegoIncompatibleException;
+import es.esports.excepciones.reglaNegocioException.JugadoresInsuficientesException;
+
 import java.util.ArrayList;
 
 public class Torneo {
@@ -57,7 +61,7 @@ public class Torneo {
         return MaxEquipos;
     }
 
-    public void añadirEquipo(Equipo e ){
+    public void añadirEquipo(Equipo e ) throws JuegoIncompatibleException, EquipoYaInscritoException, JugadoresInsuficientesException {
 
         // 1. Comprobar que el juego del equipo coincide con el del torneo
         if (e.getJuego() != this.juego) {
@@ -67,8 +71,8 @@ public class Torneo {
 
         // 2. Comprobar que la lista de jugadores titulares sea exactamente 5 (o menor si no cumple el mínimo)
         if (e.getJugadores().size() != 5) {
-            throw new JugadoresInsuficientesException("El equipo " + e.getNombre()
-                    + " debe tener exactamente 5 jugadores titulares para inscribirse (actual: " + e.getJugadores().size() + ").");
+            throw new JugadoresInsuficientesException(("El equipo " + e.getNombre()
+                    + " debe tener exactamente 5 jugadores titulares para inscribirse (actual: " + e.getJugadores().size() + ")."));
         }
 
         // 3. Comprobar que el equipo no esté ya añadido previamente
