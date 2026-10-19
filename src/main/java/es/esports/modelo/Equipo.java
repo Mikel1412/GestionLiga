@@ -1,32 +1,46 @@
 package es.esports.modelo;
 
 import es.esports.excepciones.reglaNegocioException.JuegoIncompatibleException;
+import es.esports.excepciones.reglaNegocioException.PlantillaLlenaException;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Equipo {
 
-    private String Nombre;
+    //Atributos
+
     private ArrayList<Jugador> jugadores;
     private Juego juego;
     private ArrayList<Jugador> Sustitutos;
+    // int ID;
+    private String nombre;
+    private String tag;
+    private String organizacion;
+
+    //CONSTRUCTORES EQUIPO
 
     public Equipo(String nombre, Juego juego) {
-        Nombre = nombre;
+        nombre = nombre;
         this.juego = juego;
         jugadores = new ArrayList<Jugador>();
         Sustitutos = new ArrayList<Jugador>();
     }
 
-    public String getNombre() {
-        return Nombre;
+    public Equipo() {
+
     }
 
-    public Juego getJuego() {
-        return juego;
+    public Equipo(String nombre, String tag, Juego juego, String organizacion) {
+        setNombre(nombre);
+        setTag(tag);
+        setJuego(juego);
+        setOrganizacion(organizacion);
     }
 
-    public void añadirJugador(Jugador j ){
+    //Métodos
+
+    public void añadirJugador(Jugador j ) throws JuegoIncompatibleException, PlantillaLlenaException {
 
         if (j.getJuego() != this.juego) {
             throw new JuegoIncompatibleException("El juego del jugador (" + j.getJuego()
@@ -47,26 +61,7 @@ public class Equipo {
     //FALTAN TODAS LAS COMPROBACIONES A LOS DATOS (Como lo que hay en el setID)
     //Y DECIDIR SI PONER ID EN EL EQUIPO O NO, O PONERLO EN SU DAO, PORQUE YA VIMOS QUE CON EL STATIC NO SE PODIA.
 
-    //ATRIBUTOS EQUIPO
 
-    // int ID;
-    String nombre;
-    String tag;
-    Juego juego;
-    String organizacion;
-
-    //CONSTRUCTORES EQUIPO
-
-    public Equipo() {
-
-    }
-
-    public Equipo(String nombre, String tag, Juego juego, String organizacion) {
-        setNombre(nombre);
-        setTag(tag);
-        setJuego(juego);
-        setOrganizacion(organizacion);
-    }
 
     /* public Equipo(int ID, String nombre, String tag, Juego juego, String organizacion) {
 
@@ -119,4 +114,6 @@ public class Equipo {
     public String getOrganizacion() {
         return organizacion;
     }
+
+    public List getJugadores(){return jugadores;}
 }

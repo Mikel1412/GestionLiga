@@ -12,7 +12,7 @@ public class Partida {
     private Juego juego;
 
 
-    public Partida(Equipo equipo1, Equipo equipo2, String fecha, Juego juego1) {
+    public Partida(Equipo equipo1, Equipo equipo2, String fecha, Juego juego1) throws JuegoIncompatibleException {
         // Comprobar que ambos equipos pertenezcan al mismo juego que la partida
         if (equipo1.getJuego() != juego1 || equipo2.getJuego() != juego1) {
             throw new JuegoIncompatibleException("El juego de uno o ambos equipos no coincide con el juego de la partida (" + juego1 + ").");
@@ -25,7 +25,7 @@ public class Partida {
         juego = juego1;
     }
 
-    public void setGanador(Equipo ganador){
+    public void setGanador(Equipo ganador) throws NoEncontradoException {
         if (ganador != null && (ganador.equals(this.equipo1) || ganador.equals(this.equipo2))) {
             this.Ganador = ganador;
             this.Estado = EstadoPartida.Finalizada;

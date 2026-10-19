@@ -4,11 +4,11 @@ package es.esports.excepciones.reglaNegocioException;
 // (7 personas)
 
 public class PlantillaLlenaException extends Exception{
-    private PlantillaLlenaException (String mensaje){
+    public PlantillaLlenaException (String mensaje){
         super(mensaje);
     }
 
-    private PlantillaLlenaException (String mensaje, Throwable causa){
+    public PlantillaLlenaException (String mensaje, Throwable causa){
         super(mensaje, causa);
     }
 }
