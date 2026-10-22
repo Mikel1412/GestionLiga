@@ -1,21 +1,19 @@
 package es.esports.dao;
 
+import es.esports.excepciones.DAOException;
 import es.esports.modelo.Jugador;
 
-public interface JugadorDAO{
-    private void crearJugador(Jugador jugador) {
+public interface JugadorDAO {
+    public void crearJugador(Jugador jugador) throws DAOException;
 
-    }
+    public void leerJugador(Jugador jugador);
 
-    private void leerJugador(Jugador jugador) {
+    public void actualizarJugador(Jugador jugador);
+    public void borrarJugador(Jugador jugador);
 
-    }
+    //Operaciones no crud
+    public void contarJugadores();
 
-    private void actualizarJugador(Jugador jugador) {
-
-    }
-
-    private void borrarJugador(Jugador jugador) {
-
-    }
+    public void JugadoresLibres();
 }
+

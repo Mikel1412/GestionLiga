@@ -1,6 +1,7 @@
 package es.esports.modelo;
 
 import es.esports.excepciones.reglaNegocioException.RolInvalidoException;
+import jakarta.json.JsonValue;
 
 public class Jugador {
     private String Nombre;
@@ -92,19 +93,19 @@ public class Jugador {
         return edad;
     }
 
-    public Juego getJuego() {
+    public JsonValue getJuego() {
         return juego;
     }
 
-    public Rol getRol1() {
+    public JsonValue getRol1() {
         return rol1;
     }
 
-    public Rol getRol2() {
+    public JsonValue getRol2() {
         return rol2;
     }
 
-    public Equipo getEquipo() {
+    public JsonValue getEquipo() {
         return equipo;
     }
 
