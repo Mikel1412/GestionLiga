@@ -3,17 +3,20 @@ package es.esports.dao.json;
 import es.esports.dao.JugadorDAO;
 import es.esports.excepciones.DAOException;
 import es.esports.modelo.Jugador;
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonValue;
+import jakarta.json.*;
+import jakarta.json.stream.JsonGenerator;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 
 public class JugadorDAOJson implements JugadorDAO {
-    private final Path RUTA_JUGADOR_JSON = Path.of("datos/jugador.json");
+    private final File RUTA_JUGADOR_JSON = new File("datos/jugador.json");
 
     @Override
-    public void crearJugador(Jugador jugador) throws DAOException {
+    public void crearJugador(Jugador jugador) throws DAOException, IOException {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         arrayBuilder.add(Json.createObjectBuilder()
                 .add("nombre", jugador.getNombre())
@@ -26,10 +29,18 @@ public class JugadorDAOJson implements JugadorDAO {
                 .add("Rol2", jugador.getRol2())
                 .add("Equipo", jugador.getEquipo()));
 
+        Map<String, Object> config = Map.of(JsonGenerator.PRETTY_PRINTING,
+                true);
+        JsonWriterFactory writerFactory = Json.createWriterFactory(config);
+        try (FileWriter fileWriter = new FileWriter(RUTA_JUGADOR_JSON);
+             JsonWriter jsonWriter =
+                     writerFactory.createWriter(fileWriter)) {
+            jsonWriter.writeArray(arrayBuilder.build());
+        }
     }
 
     @Override
-    public void leerJugador(Jugador jugador) {
+    public void leerJugador(Jugador jugador) throws DAOException, IOException{
 
     }
 

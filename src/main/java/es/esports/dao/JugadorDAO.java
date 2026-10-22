@@ -3,10 +3,12 @@ package es.esports.dao;
 import es.esports.excepciones.DAOException;
 import es.esports.modelo.Jugador;
 
-public interface JugadorDAO {
-    public void crearJugador(Jugador jugador) throws DAOException;
+import java.io.IOException;
 
-    public void leerJugador(Jugador jugador);
+public interface JugadorDAO {
+    public void crearJugador(Jugador jugador) throws DAOException, IOException;
+
+    public void leerJugador(Jugador jugador) throws DAOException, IOException;
 
     public void actualizarJugador(Jugador jugador);
     public void borrarJugador(Jugador jugador);
