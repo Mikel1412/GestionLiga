@@ -2,6 +2,8 @@ package es.esports.modelo;
 
 import es.esports.excepciones.NoEncontradoException;
 import es.esports.excepciones.reglaNegocioException.JuegoIncompatibleException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 public class Partida {
     private Equipo equipo1;
@@ -20,9 +22,25 @@ public class Partida {
 
         this.equipo1 = equipo1;
         this.equipo2 = equipo2;
-        Fecha = fecha;
+        setFecha(fecha);
         Estado = EstadoPartida.Activa;
         juego = juego1;
+    }
+
+    public Partida() {
+
+    }
+
+    public void setFecha(String fecha) {
+        if (fecha == null || fecha.isBlank()) {
+            throw new IllegalArgumentException("La fecha es obligatoria");
+        }
+        try {
+            LocalDate.parse(fecha.trim());   // solo comprueba que sea una fecha real (aaaa-mm-dd)
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Fecha no válida (usa aaaa-mm-dd): " + fecha);
+        }
+        this.Fecha = fecha.trim();
     }
 
     public void setGanador(Equipo ganador) throws NoEncontradoException {
