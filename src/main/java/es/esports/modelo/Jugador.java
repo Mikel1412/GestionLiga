@@ -13,9 +13,9 @@ public class Jugador {
     private Rol rol2;
     private Equipo equipo = null;
 
-    public Jugador(String apellido1, String nombre, String apellido2, String nickname, int edad, Juego juego, Rol rol1, Rol rol2) throws RolInvalidoException {
-        Apellido1 = apellido1;
+    public Jugador(String nombre, String apellido1, String apellido2, String nickname, int edad, Juego juego, Rol rol1, Rol rol2) throws RolInvalidoException {
         Nombre = nombre;
+        Apellido1 = apellido1;
         Apellido2 = apellido2;
         Nickname = nickname;
         this.edad = edad;

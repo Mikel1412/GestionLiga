@@ -3,6 +3,7 @@ package es.esports.modelo;
 import es.esports.excepciones.reglaNegocioException.EquipoYaInscritoException;
 import es.esports.excepciones.reglaNegocioException.JuegoIncompatibleException;
 import es.esports.excepciones.reglaNegocioException.JugadoresInsuficientesException;
+import es.esports.excepciones.reglaNegocioException.PlantillaLlenaException;
 
 import java.util.ArrayList;
 
@@ -61,7 +62,7 @@ public class Torneo {
         return MaxEquipos;
     }
 
-    public void añadirEquipo(Equipo e ) throws JuegoIncompatibleException, EquipoYaInscritoException, JugadoresInsuficientesException {
+    public void añadirEquipo(Equipo e ) throws JuegoIncompatibleException, EquipoYaInscritoException, JugadoresInsuficientesException, PlantillaLlenaException {
 
         // 1. Comprobar que el juego del equipo coincide con el del torneo
         if (e.getJuego() != this.juego) {
@@ -78,6 +79,11 @@ public class Torneo {
         // 3. Comprobar que el equipo no esté ya añadido previamente
         if (this.ListaEquipos.contains(e)) {
             throw new EquipoYaInscritoException("El equipo " + e.getNombre() + " ya está inscrito en este torneo.");
+        }
+
+        // 4. Comprobamos que si el torneo esta lleno, no añadimos mas equipos
+        if (ListaEquipos.size() == MaxEquipos) {
+            throw new PlantillaLlenaException("El torneo esta lleno");
         }
 
         // Si supera todas las comprobaciones, se añade
