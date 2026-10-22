@@ -4,7 +4,7 @@ public interface EquipoDAO {
 
     //Operaciones CRUD.
 
-    /**
+    /**.
      * Registra un equipo nuevo en el almacén de datos.
      * <p>
      * El equipo nace sin jugadores: la plantilla se forma después fichando jugadores
