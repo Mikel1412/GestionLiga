@@ -18,16 +18,28 @@ public class JugadorDAOJson implements JugadorDAO {
     @Override
     public void crearJugador(Jugador jugador) throws DAOException, IOException {
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
-        arrayBuilder.add(Json.createObjectBuilder()
-                .add("nombre", jugador.getNombre())
-                .add("apellido1", jugador.getApellido1())
-                .add("apellido2", jugador.getApellido2())
-                .add("nickname", jugador.getNickname())
-                .add("edad", jugador.getEdad())
-                .add("juego", jugador.getJuego())
-                .add("Rol1", jugador.getRol1())
-                .add("Rol2", jugador.getRol2())
-                .add("Equipo", jugador.getEquipo()));
+        if(jugador.getRol2() != null) {
+            arrayBuilder.add(Json.createObjectBuilder()
+                    .add("nombre", jugador.getNombre())
+                    .add("apellido1", jugador.getApellido1())
+                    .add("apellido2", jugador.getApellido2())
+                    .add("nickname", jugador.getNickname())
+                    .add("edad", jugador.getEdad())
+                    .add("juego", jugador.getJuego())
+                    .add("Rol1", jugador.getRol1())
+                    .add("rol2", jugador.getRol2())
+                    .add("Equipo", jugador.getEquipo()));
+        } else {
+            arrayBuilder.add(Json.createObjectBuilder()
+                    .add("nombre", jugador.getNombre())
+                    .add("apellido1", jugador.getApellido1())
+                    .add("apellido2", jugador.getApellido2())
+                    .add("nickname", jugador.getNickname())
+                    .add("edad", jugador.getEdad())
+                    .add("juego", jugador.getJuego())
+                    .add("Rol1", jugador.getRol1())
+                    .add("Equipo", jugador.getEquipo()));
+        }
 
         Map<String, Object> config = Map.of(JsonGenerator.PRETTY_PRINTING,
                 true);
