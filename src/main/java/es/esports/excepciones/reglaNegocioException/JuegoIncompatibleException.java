@@ -3,7 +3,7 @@ package es.esports.excepciones.reglaNegocioException;
 //Lanzaremos esta excepcion cuando intentemos incribir a un equipo cuyo
 // juego no corresponde con el juego del torneo
 
-public class JuegoIncompatibleException extends Exception{
+public class JuegoIncompatibleException extends ReglaDeNegocioException{
     public JuegoIncompatibleException(String mensaje){
         super(mensaje);
     }

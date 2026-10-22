@@ -1,6 +1,6 @@
 package es.esports.excepciones.reglaNegocioException;
 
-public class JugadoresInsuficientesException extends Exception{
+public class JugadoresInsuficientesException extends ReglaDeNegocioException{
     public JugadoresInsuficientesException(String mensaje) {
         super(mensaje);
     }

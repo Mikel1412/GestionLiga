@@ -3,7 +3,7 @@ package es.esports.excepciones.reglaNegocioException;
 //Lanzaremos esta excepcion cuando intentemos inscribir a un equipo a
 //un torneo y este ya haya empezado
 
-public class EstadoTorneoException extends Exception{
+public class EstadoTorneoException extends ReglaDeNegocioException{
     public EstadoTorneoException(String mensaje){
         super(mensaje);
     }

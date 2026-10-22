@@ -1,5 +1,7 @@
 package es.esports.dao;
 
+import es.esports.modelo.Equipo;
+
 public interface EquipoDAO {
 
     //Operaciones CRUD.

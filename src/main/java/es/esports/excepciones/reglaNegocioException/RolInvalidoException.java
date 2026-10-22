@@ -2,7 +2,7 @@ package es.esports.excepciones.reglaNegocioException;
 
 //Esta excepcion se lanzará cuando el rol del jugador no es el del equipo
 
-public class RolInvalidoException extends Exception{
+public class RolInvalidoException extends ReglaDeNegocioException{
     public RolInvalidoException(String mensaje){
         super(mensaje);
     }
