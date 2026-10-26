@@ -27,6 +27,8 @@ import java.util.Optional;
 
 public class EquipoDAOJson implements EquipoDAO {
 
+    //HEMOS MODULARIZADO. Para no repetir bvarias veces lo de cargar y guardar de un json.
+
     private final File fichero;   // por ejemplo new File("datos/equipos.json")
 
     public EquipoDAOJson(File fichero) throws DAOException {
@@ -42,8 +44,11 @@ public class EquipoDAOJson implements EquipoDAO {
     }
 
     // ---------- LEER: fichero -> lista de Equipo ----------
+    // UTILIZAMOS ESTE METODO PARA PODER CARGAR LOS DATOS DE EQUIPO, PORQUE A LA HORA DE CERRAR EL PROGRAMA NO HAY PERSISTENCIA DE NINGUN TIPO DE DATOS
+    // POR LO QUE CARGAREMOS LOS DATOS DESDE UN FICHERO JSON PARA MANTENER EL PROGRAMA AL TANTO.
+
     private List<Equipo> cargar() throws DAOException {
-        // Lo que se abre dentro del paréntesis del try se cierra solo al terminar
+        // Lo que se abre dentro del paréntesis del try se cierra solo al terminar. (nuestro Try-with-resources).
         try (FileReader lectorFichero = new FileReader(fichero, StandardCharsets.UTF_8);
              JsonReader lectorJson = Json.createReader(lectorFichero)) {
 
@@ -62,13 +67,17 @@ public class EquipoDAOJson implements EquipoDAO {
             return equipos;
 
         } catch (IOException | RuntimeException e) {
-            // Fichero ilegible, JSON mal escrito, campo que falta o dato que no pasa la validación
+            // Fichero no legible, JSON mal escrito, campo que falta o dato que no pasa la validación
             throw new DAOException("No se pudo leer el fichero " + fichero, e);
         }
     }
 
+
     // ---------- ESCRIBIR: lista de Equipo -> fichero ----------
+
+
     private void guardar(List<Equipo> equipos) throws DAOException {
+
         // 1. Construir el array JSON, equipo por equipo
         JsonArrayBuilder array = Json.createArrayBuilder();
         for (Equipo e : equipos) {
@@ -95,6 +104,11 @@ public class EquipoDAOJson implements EquipoDAO {
     }
 
     // ---------- Métodos auxiliares ----------
+
+    // ESTE METODO LO UTILIZAMOS PARA EVITAR DUPLICADOS EN CREAR
+    // Los equipos están en una lista en memoria, y cada uno ocupa un lugar numerado desde 0.
+    // Para modificar o borrar uno concreto, hay que saber en qué lugar está.
+
     private int buscarPosicion(List<Equipo> equipos, String nombre) {
         for (int i = 0; i < equipos.size(); i++) {
             if (equipos.get(i).getNombre().equalsIgnoreCase(nombre)) {
@@ -103,6 +117,9 @@ public class EquipoDAOJson implements EquipoDAO {
         }
         return -1;
     }
+
+    // ESTE METODO ES PARA LA PARTE DE COMPROBACIÓN DE ARGUMENTOS (Para no pasar argumentos erroneos).
+    // ESTE METODO VALIDA LOS ARGUMENTOS DE TEXTO QUE LLEGAN DE FUERA (como leer, borrar, buscarPorNombre... etc)
 
     private String limpiarTexto(String texto, String descripcion) {
         if (texto == null || texto.isBlank()) {
@@ -113,11 +130,27 @@ public class EquipoDAOJson implements EquipoDAO {
 
     @Override
     public void crear(Equipo equipo) throws DuplicadoException, DAOException {
+        //Primero tenemos que obtener la lista de los equipos que ya haya guardados
+        List<Equipo> equipos = cargar();
 
+        //Ahora buscaremos si existe un equipo ya con este nombre
+        int posicion = buscarPosicion(equipos,equipo.getNombre());
+
+        //Ahora, si la posicion no es -1, ya existe.
+        if (posicion != -1) {
+            throw new DuplicadoException("equipo " +equipo.getNombre());
+        }
+
+        //Añadimos el equipo a la lista, y para que no quede solo en la memoria,
+        //llamamos al metodo guardar para que guarde nuevamente la lista equipos en un fichero JSON.
+        equipos.add(equipo);
+        guardar(equipos);
+        System.out.println("Equipo creado correctamente");
     }
 
     @Override
     public Optional<Equipo> leer(String nombre) throws DAOException {
+
         return Optional.empty();
     }
 
