@@ -12,10 +12,6 @@ public class Equipo {
     private Juego juego;
     private String organizacion;
 
-    /** Constructor vacío: lo necesita Jackson. */
-    public Equipo() {
-    }
-
     public Equipo(String nombre, String tag, Juego juego, String organizacion) {
         setNombre(nombre);
         setTag(tag);
