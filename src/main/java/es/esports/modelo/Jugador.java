@@ -105,9 +105,15 @@ public class Jugador {
         return rol2;
     }
 
-    public JsonValue getEquipo() {
+    public Equipo getEquipo() {
+
+        return this.equipo;
+    }
+
+    public JsonValue getEquipoJson(){
         return equipo;
     }
+
 
     public void setEquipo(Equipo equipo) {
         this.equipo = equipo;
