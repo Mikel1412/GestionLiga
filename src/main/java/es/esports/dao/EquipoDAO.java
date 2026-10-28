@@ -26,7 +26,7 @@ public interface EquipoDAO {
      * @param equipo el equipo a guardar; no puede ser {@code null}
      * @throws DuplicadoException   si ya existe un equipo con ese nombre
      * @throws DAOException         si falla la lectura o escritura del fichero
-     * @throws NullPointerException si {@code equipo} es {@code null}
+     * @throws IllegalArgumentException si {@code equipo} es {@code null}
      */
     void crear(Equipo equipo) throws DuplicadoException, DAOException;
 
@@ -38,7 +38,7 @@ public interface EquipoDAO {
      * @throws DAOException             si falla la lectura del fichero
      * @throws IllegalArgumentException si el nombre es nulo o vacío
      */
-    Optional<Equipo> leer (String nombre) throws DAOException;
+    Equipo leer (String nombre) throws NoEncontradoException, DAOException;
 
     /**
      * Devuelve todos los equipos registrados.
@@ -46,7 +46,7 @@ public interface EquipoDAO {
      * @return la lista de equipos (vacía si no hay ninguno)
      * @throws DAOException si falla la lectura del fichero
      */
-    List<Equipo> leerTodos() throws DAOException;
+    List<Equipo> leerTodos() throws NoEncontradoException, DAOException;
 
     /**
      * Sustituye los datos de un equipo ya existente.
@@ -57,7 +57,7 @@ public interface EquipoDAO {
      * @param equipo el equipo con los datos nuevos; no puede ser {@code null}
      * @throws NoEncontradoException si no existe ningún equipo con ese nombre
      * @throws DAOException          si falla la lectura o escritura del fichero
-     * @throws NullPointerException  si {@code equipo} es {@code null}
+     * @throws IllegalArgumentException si {@code equipo} es {@code null}
      */
     void actualizar(Equipo equipo) throws NoEncontradoException, DAOException;
 
@@ -79,7 +79,7 @@ public interface EquipoDAO {
      * @param juego el juego; no puede ser {@code null}
      * @return la lista de equipos de ese juego (vacía si no hay ninguno)
      * @throws DAOException         si falla la lectura del fichero
-     * @throws NullPointerException si {@code juego} es {@code null}
+     * @throws IllegalArgumentException si {@code equipo} es {@code null}
      */
     List<Equipo> equiposPorJuego(Juego juego) throws DAOException;
 

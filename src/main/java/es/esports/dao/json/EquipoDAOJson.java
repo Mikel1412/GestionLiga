@@ -19,11 +19,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class EquipoDAOJson implements EquipoDAO {
 
@@ -121,15 +117,21 @@ public class EquipoDAOJson implements EquipoDAO {
     // ESTE METODO ES PARA LA PARTE DE COMPROBACIÓN DE ARGUMENTOS (Para no pasar argumentos erroneos).
     // ESTE METODO VALIDA LOS ARGUMENTOS DE TEXTO QUE LLEGAN DE FUERA (como leer, borrar, buscarPorNombre... etc)
 
-    private String limpiarTexto(String texto, String descripcion) {
+    private String limpiarTexto(String texto) {
         if (texto == null || texto.isBlank()) {
-            throw new IllegalArgumentException(descripcion + " no puede estar vacío");
+            throw new IllegalArgumentException("El texto no puede estar vacío");
         }
         return texto.trim();
     }
 
     @Override
     public void crear(Equipo equipo) throws DuplicadoException, DAOException {
+
+        //El dato a introducir no puede ser null, osea que lanzariamos una excepcion en caso de que si fuera null.
+        if (equipo==null) {
+            throw new IllegalArgumentException("No puede ser NULO el equipo");
+        }
+
         //Primero tenemos que obtener la lista de los equipos que ya haya guardados
         List<Equipo> equipos = cargar();
 
@@ -149,38 +151,158 @@ public class EquipoDAOJson implements EquipoDAO {
     }
 
     @Override
-    public Optional<Equipo> leer(String nombre) throws DAOException {
+    public Equipo leer(String nombre) throws NoEncontradoException, DAOException {
 
-        return Optional.empty();
+        //Para leer los detalles del equipo, tenemos que identificarlo por su nombre, pero el nombre podria tener espacios sobrantes por los lados, para eso utilizamos limpiarTexto
+        //No hace falta el if (nombre == null) porque ya lo comprobamos todoo esto en limpiar texto.
+        String buscado = limpiarTexto(nombre);
+
+        //Ahora crearemos una Lista en este metodo y le pasaremos los equipos con el metodo cargar.
+        List<Equipo> equipos = cargar();
+
+        //Ahora buscaremos la posicion del equipo para ver si comprobar si este esta en la lista, si no esta lanzaremos un error.
+        int posicion = buscarPosicion(equipos, nombre);
+        if (posicion == -1) {
+            throw new NoEncontradoException("El equipo no existe en la lista");
+        }
+
+        //Si todoo ha salido bien, para devolver el equipo, utilizaremos la posicion donde esta este equipo en la lista, y le hacemos return.
+        return equipos.get(posicion);
     }
 
     @Override
     public List<Equipo> leerTodos() throws DAOException {
-        return List.of();
+        //Como simplemente tenemos que leer todos los datos de los equipos, pues simplemente devolvemos el metodo cargar.
+        return cargar();
     }
 
     @Override
     public void actualizar(Equipo equipo) throws NoEncontradoException, DAOException {
 
+        //El dato a introducir no puede ser null, osea que lanzariamos una excepcion en caso de que si fuera null.
+        if (equipo==null) {
+            throw new IllegalArgumentException("No puede ser NULO el equipo");
+        } else {
+            //Primero cargamos los equipos
+            List<Equipo> equipos = cargar();
+
+            int posicion = buscarPosicion(equipos, equipo.getNombre());
+
+            //Comprobamos que posicion no sea -1.
+            if (posicion == -1) {
+                throw new NoEncontradoException("No se ha encontrado el equipo en la lista");
+            }
+
+            //En caso de existir la posicion de donde esta el equipo, sustituimos el equipo viejo por el nuevo.
+            equipos.set(posicion,equipo);
+
+            //Y volvemos a guardar la lista de equipos para la persistencia.
+            guardar(equipos);
+        }
     }
 
     @Override
     public void borrar(String nombre) throws NoEncontradoException, DAOException {
 
+        //Limpiamos el texto introducido en el metodo.
+        //No hace falta el if (nombre == null) porque ya lo comprobamos todoo esto en limpiar texto.
+        String textoLimpio = limpiarTexto(nombre);
+
+        //Crearemos un booleano para ver si se ha encontrado lo que queriamos borrar o no.
+        boolean encontrado = false;
+
+        //Primero cargamos los equipos
+        List<Equipo> equipos = cargar();
+
+        //Hacemos un iterador de la lista equipos para poder borrar de la manera correcta el objeto.
+        Iterator<Equipo> it = equipos.iterator();
+
+        while (it.hasNext()) {
+            Equipo e = it.next();
+            if (e.getNombre().equalsIgnoreCase(textoLimpio)) {
+                it.remove();
+                encontrado = true;
+            }
+        }
+
+        //Si no se ha encontrado ningun objeto con el nombre del equipo introducido, es que no lo hemos encontrado (no ha pasado por el if del iterator).
+        if (!encontrado) {
+            throw new NoEncontradoException("No se ha encontrado el equipo para borrar");
+        }
+
+        //Utilizamos el metodo guardar equipos para guardar los cambios del equipo borrado en la persistencia.
+        guardar(equipos);
+
     }
 
     @Override
     public List<Equipo> equiposPorJuego(Juego juego) throws DAOException {
-        return List.of();
+
+        //El dato a introducir no puede ser null, osea que lanzariamos una excepcion en caso de que si fuera null.
+        if (juego == null) {
+            throw new IllegalArgumentException("El juego no puede ser null");
+        }
+
+        //Cargamos la lista.
+        List<Equipo> equipos = cargar();
+
+        //Hacemos una nueva lista para luego devolver los equipos que compiten en esos juegos.
+        List<Equipo> equiposJuego = new ArrayList<>();
+
+        //For-each para introducir los datos en equiposJuego
+        for (Equipo e : equipos) {
+            if (e.getJuego()==juego) {
+                equiposJuego.add(e);
+            }
+        }
+
+        return equiposJuego;
     }
 
     @Override
     public List<Equipo> buscarPorNombre(String texto) throws DAOException {
-        return List.of();
+
+        //Para buscar un equipo por nombre, primero tendremos que limpiar lo que podría tener espacios sobrantes por los lados, para eso utilizamos limpiarTexto
+        //No hace falta el if (texto == null) porque ya lo comprobamos todoo esto en limpiar texto.
+        String limpio = limpiarTexto(texto).toLowerCase();
+
+        //Cargamos los equipos
+        List<Equipo> equipos = cargar();
+
+        //Nueva lista para los equipos identificados con algo del texto introducido en su nombre.
+        List<Equipo> equiposCoincidencias = new ArrayList<>();
+
+        //Recorremos los equipos con un for-each para buscar por el texto.
+        //Pondremos el toLowerCase para que no pase por alto alguna mayuscula y poder comparar de una manera mas facil.
+        for (Equipo e : equipos) {
+            if (e.getNombre().toLowerCase().contains(limpio)) {
+                equiposCoincidencias.add(e);
+            }
+        }
+
+        return equiposCoincidencias;
     }
 
     @Override
     public List<Equipo> equiposDeOrganizacion(String organizacion) throws DAOException {
-        return List.of();
+
+        //Para buscar un equipos por organizacion, primero tendremos que limpiar lo que podría tener espacios sobrantes por los lados, para eso utilizamos limpiarTexto
+        //No hace falta el if (organizacion == null) porque ya lo comprobamos todoo esto en limpiar texto.
+        String limpio = limpiarTexto(organizacion);
+
+        //Cargamos los equipos
+        List<Equipo> equipos = cargar();
+
+        //Nueva lista para los equipos identificados con la misma organizacion.
+        List<Equipo> equiposOrganizacion = new ArrayList<>();
+
+        //Recorremos los equipos con un for-each para buscar los equipos por organizacion.
+        for (Equipo e : equipos) {
+            if (e.getOrganizacion().equalsIgnoreCase(limpio)) {
+                equiposOrganizacion.add(e);
+            }
+        }
+
+        return equiposOrganizacion;
     }
 }
