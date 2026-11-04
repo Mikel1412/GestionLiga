@@ -6,13 +6,14 @@ import es.esports.excepciones.NoEncontradoException;
 import es.esports.modelo.EstadoPartida;
 import es.esports.modelo.Partida;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface PartidaDAO {
 
     void crear(Partida p) throws DuplicadoException, DAOException;
 
-    void leer(int id) throws NoEncontradoException, DAOException;
+    Partida leer(int id) throws NoEncontradoException, DAOException;
 
     List<Partida> leerTodos() throws DAOException;
 
@@ -20,9 +21,18 @@ public interface PartidaDAO {
 
     void borrar(int id ) throws NoEncontradoException, DAOException;
 
-    List<Partida> patidasPorTorneo (String torneo) throws DAOException;
+    List<Partida> partidasPorTorneo (String torneo) throws DAOException;
 
     List<Partida> partidasPorEquipo(String equipo) throws DAOException;
 
     List<Partida> partidasPorEstado(EstadoPartida estado) throws DAOException;
+
+    boolean existePartida(int id) throws DAOException;
+
+    Partida proximaPartida(String equipo) throws NoEncontradoException, DAOException;
+
+    ArrayList<Partida> partidasGanadasPorEquipo(String equipo) throws DAOException;
+
+    int contarPartidasJugadas(String equipo) throws DAOException;
 }
+
