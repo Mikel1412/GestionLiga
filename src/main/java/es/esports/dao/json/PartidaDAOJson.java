@@ -2,7 +2,6 @@ package es.esports.dao.json;
 
 import es.esports.dao.PartidaDAO;
 import es.esports.excepciones.DAOException;
-import es.esports.excepciones.DuplicadoException;
 import es.esports.excepciones.NoEncontradoException;
 import es.esports.modelo.EstadoPartida;
 import es.esports.modelo.Juego;
@@ -126,7 +125,7 @@ public class PartidaDAOJson implements PartidaDAO{
 
         try {
             if (fichero.getParentFile() != null) {
-                fichero.getParentFile(). mkdirs();
+                fichero.getParentFile().mkdirs();
             }
             Map<String, Object> config = Map.of(JsonGenerator.PRETTY_PRINTING, true);
             try (FileWriter escritorFichero = new FileWriter(fichero, StandardCharsets.UTF_8);
@@ -325,8 +324,7 @@ public class PartidaDAOJson implements PartidaDAO{
         ArrayList<Partida> resultado = new ArrayList<>();
         for (Partida p : cargar()) {
 
-            if (p.getEstado() == EstadoPartida.FINALIZADA && p.getGanador() != null
-                    && p.getGanador().equalsIgnoreCase(limpio)) {
+            if (p.getEstado() == EstadoPartida.FINALIZADA && p.getGanador().equalsIgnoreCase(limpio)) {
                 resultado.add(p);
             }
         }
