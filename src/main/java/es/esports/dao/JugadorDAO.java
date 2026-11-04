@@ -3,6 +3,7 @@ package es.esports.dao;
 import es.esports.excepciones.DAOException;
 import es.esports.excepciones.DuplicadoException;
 import es.esports.excepciones.NoEncontradoException;
+import es.esports.modelo.Equipo;
 import es.esports.modelo.Juego;
 import es.esports.modelo.Jugador;
 
@@ -30,5 +31,7 @@ public interface JugadorDAO {
     public List<Jugador> jugadoresLibres() throws DAOException;
 
     public List<Jugador> buscarJugadorPorJuego(Juego juego) throws DAOException;
+
+    public void ficharPorEquipo(String nickname, Equipo equipo) throws NoEncontradoException, DAOException;
 }
 
