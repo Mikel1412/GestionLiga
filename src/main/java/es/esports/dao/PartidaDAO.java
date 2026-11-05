@@ -20,7 +20,7 @@ public interface PartidaDAO {
 
     void borrar(int id ) throws NoEncontradoException, DAOException;
 
-    List<Partida> partidasPorTorneo (String torneo) throws DAOException;
+    List<Partida> partidasDeTorneo (String torneo) throws DAOException;
 
     List<Partida> partidasPorEquipo(String equipo) throws DAOException;
 
@@ -33,5 +33,6 @@ public interface PartidaDAO {
     ArrayList<Partida> partidasGanadasPorEquipo(String equipo) throws DAOException;
 
     int contarPartidasJugadas(String equipo) throws DAOException;
+
 }
 
