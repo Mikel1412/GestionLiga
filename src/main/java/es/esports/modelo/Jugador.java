@@ -12,7 +12,7 @@ public class Jugador {
     private Juego juego;
     private Rol rol1;
     private Rol rol2;              // Solamente estaria permitido el null en el valorant, porque no te tienes que asignar un segundo rol. (este se elige a la hora de entrar a la partida por los personajes)
-    private String equipo;         // Nombre del equipo de donde proviene este jugador (si no tiene equipo (equipo == null) es libre)
+    private String equipo = null;         // Nombre del equipo de donde proviene este jugador (si no tiene equipo (equipo == null) es libre)
     private boolean titular;
 
     //IMPORTANTE: Cada jugador se crea como libre (que no tiene equipo al principio cuando este es creado)
@@ -23,7 +23,7 @@ public class Jugador {
     // CONSTRUCTOR LOL
     // Este seria un constructor para los jugadores de LoL, porque si o si se piden dos roles.
     public Jugador(String nombre, String apellido1, String apellido2, String nickname,
-                   int edad, Juego juego, Rol rol1, Rol rol2) throws RolInvalidoException {
+                   int edad, Juego juego, Rol rol1, Rol rol2, String equipo) throws RolInvalidoException {
         setNombre(nombre);          //Todos estos sets son para las comprobaciones de datos erroneos como, nulls, en blanco, y luego si hay espacios sobrantes por los lados, hacer un trim() para limpiarlo.
         setApellido1(apellido1);
         setApellido2(apellido2);
@@ -31,13 +31,14 @@ public class Jugador {
         setEdad(edad);
         setJuego(juego);       // el juego va ANTES que los roles, porque los roles se validan contra él
         setRoles(rol1, rol2);
+        setEquipo(equipo);
     }
 
     // CONSTRUCTOR VALORANT
     // Este seria un constructor para jugadores de Valorant, que tienen solo un rol en el momento.
     public Jugador(String nombre, String apellido1, String apellido2, String nickname,
-                   int edad, Juego juego, Rol rol1) throws RolInvalidoException {
-        this(nombre, apellido1, apellido2, nickname, edad, juego, rol1, null);
+                   int edad, Juego juego, Rol rol1, String equipo) throws RolInvalidoException {
+        this(nombre, apellido1, apellido2, nickname, edad, juego, rol1, null, equipo);
     }
 
     public String getNombre() { return nombre; }

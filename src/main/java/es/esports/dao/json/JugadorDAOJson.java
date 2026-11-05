@@ -34,6 +34,15 @@ public class JugadorDAOJson implements JugadorDAO {
 
             // Cada elemento del array es un { ... } del JSON
             for (JsonObject o : array.getValuesAs(JsonObject.class)) {
+                Rol rol2 = null;
+                if(o.containsKey("rol2") && !o.isNull("rol2")){
+                    rol2 = Rol.valueOf(o.getString("rol2"));
+                }
+
+                String equipo = null;
+                if(o.containsKey("equipo") && !o.isNull("equipo")){
+                    equipo = o.getString("equipo");
+                }
                 Jugador jugador = new Jugador(
                         o.getString("nombre"),
                         o.getString("apellido1"),
@@ -42,8 +51,11 @@ public class JugadorDAOJson implements JugadorDAO {
                         o.getInt("edad"),
                         Juego.valueOf(o.getString("juego")),   // el texto "VALORANT" -> Juego.VALORANT
                         Rol.valueOf(o.getString("rol1")),
-                        Rol.valueOf(o.getString("rol2"))
+                        rol2,
+                        equipo
                 );
+
+
                 jugadores.add(jugador);
             }
             return jugadores;
@@ -73,6 +85,9 @@ public class JugadorDAOJson implements JugadorDAO {
                     .add("rol1", j.getRol1().name()));
             if (j.getRol2() != null) {
                 array.add(Json.createObjectBuilder().add("rol2", j.getRol2().name()));
+            }
+            if (j.getEquipo() != null) {
+                array.add(Json.createObjectBuilder().add("equipo", j.getEquipo()));
             }
            /* if (j.getEquipo() != null) {
                 array.add(Json.createObjectBuilder().add("equipo", j.getEquipo().getNombre()));
@@ -273,7 +288,53 @@ public class JugadorDAOJson implements JugadorDAO {
             throw new IllegalStateException("El equipo y el jugador no son del mismo juego");
         }
 
-        jugador.setEquipo(equipo);
+        jugador.setEquipo(equipo.getNombre());
         guardar(jugadores);
     }
+
+    @Override
+    public void liberarJugador(String nickname) throws NoEncontradoException, DAOException {
+        String nick = limpiarTexto(nickname);
+
+        List<Jugador> jugadores = cargar();
+
+        int posicion = buscarPosicionPorNickname(jugadores, nick);
+        if (posicion == -1) {
+            throw new NoEncontradoException("jugador " + nick);
+        }
+
+        Jugador jugador = jugadores.get(posicion);
+
+        if (jugador.getEquipo() == null) {
+            throw new IllegalStateException("El jugador " + nick + " ya esta libre");
+        }
+
+        jugador.setEquipo(null);
+        guardar(jugadores);
+    }
+
+    @Override
+    public void transpasarJugador(String nickname, Equipo nueovEquipo) throws NoEncontradoException, DAOException {
+        liberarJugador(nickname);
+        ficharPorEquipo(nickname, nueovEquipo);
+    }
+
+    @Override
+    public List<Jugador> jugadoresDeEquipo(String equipo) throws NoEncontradoException, DAOException{
+        List<Jugador> jugadores = cargar();
+
+        List<Jugador> jugadoresEquipo = List.of();
+
+        Iterator<Jugador> it = jugadores.iterator();
+
+        while (it.hasNext()){
+            Jugador j = it.next();
+            if (j.getEquipo() == equipo){
+                jugadoresEquipo.add(j);
+            }
+        }
+
+        return jugadoresEquipo;
+    }
+
 }

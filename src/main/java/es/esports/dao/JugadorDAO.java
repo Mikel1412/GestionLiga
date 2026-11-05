@@ -33,5 +33,11 @@ public interface JugadorDAO {
     public List<Jugador> buscarJugadorPorJuego(Juego juego) throws DAOException;
 
     public void ficharPorEquipo(String nickname, Equipo equipo) throws NoEncontradoException, DAOException;
+
+    public void liberarJugador(String nickname) throws NoEncontradoException, DAOException;
+
+    public void transpasarJugador(String nickname, Equipo nuevoEquipo) throws NoEncontradoException, DAOException;
+
+    public List<Jugador> jugadoresDeEquipo(String equipo) throws NoEncontradoException, DAOException;
 }
 
