@@ -102,9 +102,6 @@ public class JugadorDAOJson implements JugadorDAO {
             if (j.getEquipo() != null) {
                 array.add(Json.createObjectBuilder().add("equipo", j.getEquipo()));
             }
-           /* if (j.getEquipo() != null) {
-                array.add(Json.createObjectBuilder().add("equipo", j.getEquipo().getNombre()));
-            }*/
         }
 
         // 2. Escribirlo en el fichero
@@ -133,15 +130,6 @@ public class JugadorDAOJson implements JugadorDAO {
         return -1;
     }
 
-    private int buscarPosicionPorNickname(List<Jugador> jugadores, String nickname) {
-        for (int i = 0; i < jugadores.size(); i++) {
-            if (jugadores.get(i).getNickname().equalsIgnoreCase(nickname)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     private String limpiarTexto(String texto) {
         if (texto == null || texto.isBlank()) {
             throw new IllegalArgumentException("El texto no puede estar vacío");
@@ -157,10 +145,10 @@ public class JugadorDAOJson implements JugadorDAO {
 
         List<Jugador> jugadores = cargar();
 
-        int posicion = buscarPosicion(jugadores, jugador.getNombre());
+        int posicion = buscarPosicion(jugadores, jugador.getNickname());
 
         if (posicion != -1){
-            throw new DuplicadoException("jugador " + jugador.getNombre());
+            throw new DuplicadoException("jugador " + jugador.getNickname());
         } else {
             jugadores.add(jugador);
             guardar(jugadores);
@@ -194,7 +182,7 @@ public class JugadorDAOJson implements JugadorDAO {
         } else {
             List<Jugador> jugadores = cargar();
 
-            int posicion = buscarPosicion(jugadores, jugador.getNombre());
+            int posicion = buscarPosicion(jugadores, jugador.getNickname());
 
             if (posicion == -1){
                 throw new NoEncontradoException("No se ha encontrado el jugador en la lista");
@@ -218,7 +206,7 @@ public class JugadorDAOJson implements JugadorDAO {
 
         while (it.hasNext()){
             Jugador j = it.next();
-            if (j.getNombre().equalsIgnoreCase(textoLimpio)){
+            if (j.getNickname().equalsIgnoreCase(textoLimpio)){
                 it.remove();
                 encontrado = true;
             }
@@ -246,7 +234,7 @@ public class JugadorDAOJson implements JugadorDAO {
     public List<Jugador> jugadoresLibres() throws DAOException {
         List<Jugador> jugadores = cargar();
 
-        List<Jugador> jugadoresLibres = List.of();
+        List<Jugador> jugadoresLibres = new ArrayList<>();
 
         Iterator<Jugador> it = jugadores.iterator();
 
@@ -264,7 +252,7 @@ public class JugadorDAOJson implements JugadorDAO {
     public List<Jugador> buscarJugadorPorJuego(Juego juego) throws DAOException {
         List<Jugador> jugadores = cargar();
 
-        List<Jugador> jugadoresJuego = List.of();
+        List<Jugador> jugadoresJuego = new ArrayList<>();
 
         Iterator<Jugador> it = jugadores.iterator();
 
@@ -287,7 +275,7 @@ public class JugadorDAOJson implements JugadorDAO {
 
         List<Jugador> jugadores = cargar();
 
-        int posicion = buscarPosicionPorNickname(jugadores, nick);
+        int posicion = buscarPosicion(jugadores, nick);
         if (posicion == -1) {
             throw new NoEncontradoException("jugador " + nick);
         }
@@ -311,7 +299,7 @@ public class JugadorDAOJson implements JugadorDAO {
 
         List<Jugador> jugadores = cargar();
 
-        int posicion = buscarPosicionPorNickname(jugadores, nick);
+        int posicion = buscarPosicion(jugadores, nick);
         if (posicion == -1) {
             throw new NoEncontradoException("jugador " + nick);
         }
@@ -336,13 +324,13 @@ public class JugadorDAOJson implements JugadorDAO {
     public List<Jugador> jugadoresDeEquipo(String equipo) throws NoEncontradoException, DAOException{
         List<Jugador> jugadores = cargar();
 
-        List<Jugador> jugadoresEquipo = List.of();
+        List<Jugador> jugadoresEquipo = new ArrayList<>();
 
         Iterator<Jugador> it = jugadores.iterator();
 
         while (it.hasNext()){
             Jugador j = it.next();
-            if (j.getEquipo() == equipo){
+            if (j.getEquipo().equalsIgnoreCase(equipo)){
                 jugadoresEquipo.add(j);
             }
         }
