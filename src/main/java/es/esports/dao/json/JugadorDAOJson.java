@@ -22,11 +22,24 @@ import java.util.List;
 import java.util.Map;
 
 public class JugadorDAOJson implements JugadorDAO {
-    private final File RUTA_JUGADOR_JSON = new File("datos/jugador.json");
+
+    private final File fichero;   // por ejemplo new File("datos/jugador.json")
+
+    public JugadorDAOJson(File fichero) throws DAOException {
+        if (fichero == null) {
+            throw new IllegalArgumentException("La ruta del fichero no puede ser null");
+        }
+        this.fichero = fichero;
+
+        // Primera vez: el fichero no existe, lo creamos con una lista vacía
+        if (!fichero.exists()) {
+            guardar(new ArrayList<>());
+        }
+    }
 
     private List<Jugador> cargar() throws DAOException {
         // Lo que se abre dentro del paréntesis del try se cierra solo al terminar. (nuestro Try-with-resources).
-        try (FileReader lectorFichero = new FileReader(RUTA_JUGADOR_JSON, StandardCharsets.UTF_8);
+        try (FileReader lectorFichero = new FileReader(fichero, StandardCharsets.UTF_8);
              JsonReader lectorJson = Json.createReader(lectorFichero)) {
 
             JsonArray array = lectorJson.readArray();
@@ -62,7 +75,7 @@ public class JugadorDAOJson implements JugadorDAO {
 
         } catch (IOException | RuntimeException e) {
             // Fichero no legible, JSON mal escrito, campo que falta o dato que no pasa la validación
-            throw new DAOException("No se pudo leer el fichero " + RUTA_JUGADOR_JSON, e);
+            throw new DAOException("No se pudo leer el fichero " + fichero, e);
         }
     }
 
@@ -96,16 +109,16 @@ public class JugadorDAOJson implements JugadorDAO {
 
         // 2. Escribirlo en el fichero
         try {
-            if (RUTA_JUGADOR_JSON.getParentFile() != null) {
-                RUTA_JUGADOR_JSON.getParentFile().mkdirs();   // crea la carpeta datos/ si no existe
+            if (fichero.getParentFile() != null) {
+                fichero.getParentFile().mkdirs();   // crea la carpeta datos/ si no existe
             }
             Map<String, Object> config = Map.of(JsonGenerator.PRETTY_PRINTING, true);
-            try (FileWriter escritorFichero = new FileWriter(RUTA_JUGADOR_JSON, StandardCharsets.UTF_8);
+            try (FileWriter escritorFichero = new FileWriter(fichero, StandardCharsets.UTF_8);
                  JsonWriter escritorJson = Json.createWriterFactory(config).createWriter(escritorFichero)) {
                 escritorJson.writeArray(array.build());
             }
         } catch (IOException e) {
-            throw new DAOException("No se pudo escribir el fichero " + RUTA_JUGADOR_JSON, e);
+            throw new DAOException("No se pudo escribir el fichero " + fichero, e);
         }
     }
 
