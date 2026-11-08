@@ -5,7 +5,6 @@ import es.esports.excepciones.DAOException;
 import es.esports.excepciones.NoEncontradoException;
 import es.esports.modelo.EstadoPartida;
 import es.esports.modelo.Juego;
-import es.esports.modelo.Jugador;
 import es.esports.modelo.Partida;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -24,7 +23,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 

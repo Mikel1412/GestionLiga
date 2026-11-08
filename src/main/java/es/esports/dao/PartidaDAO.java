@@ -98,6 +98,8 @@ public interface PartidaDAO {
      */
     List<Partida> partidasPorEstado(EstadoPartida estado) throws DAOException;
 
+    boolean existePartida(int id) throws DAOException;
+
     /**
      * Devuelve la próxima partida pendiente de un equipo.
      *
