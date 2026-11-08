@@ -23,10 +23,28 @@ import java.util.Scanner;
  */
 public class Menu {
 
-    // Una acción del menú: puede lanzar cualquier excepción, que ejecutar() se encarga de mostrar.
-    @FunctionalInterface
-    private interface Accion {
-        void ejecutar() throws Exception;
+    // =====================================================================
+    //  GESTIÓN DE ERRORES (un único sitio para todas las opciones)
+    // =====================================================================
+
+    private void mostrarError(Exception e) {
+        if (e instanceof NoEncontradoException) {
+            System.out.println("No encontrado: " + e.getMessage());
+        } else if (e instanceof DuplicadoException) {
+            System.out.println("Ya existe: " + e.getMessage());
+        } else if (e instanceof ReglaDeNegocioException) {
+            // Va ANTES que DAOException porque es una subclase suya
+            System.out.println("No permitido: " + e.getMessage());
+        } else if (e instanceof DAOException) {
+            System.out.println("Error de datos: " + e.getMessage()
+                    + (e.getCause() != null ? " (" + e.getCause().getMessage() + ")" : ""));
+        } else if (e instanceof IOException) {
+            System.out.println("Error de ficheros: " + e.getMessage());
+        } else if (e instanceof RuntimeException) {
+            System.out.println("Dato no válido: " + e.getMessage());
+        } else {
+            System.out.println("Error inesperado: " + e.getMessage());
+        }
     }
 
     private final Scanner sc = new Scanner(System.in);   // un único Scanner para todo el programa
@@ -47,7 +65,7 @@ public class Menu {
     //  MENÚ PRINCIPAL
     // =====================================================================
 
-    public void iniciar() {
+    public void iniciar() throws DAOException {
         int opcion;
         do {
             System.out.println();
@@ -76,7 +94,7 @@ public class Menu {
     //  JUGADORES
     // =====================================================================
 
-    private void menuJugadores() {
+    private void menuJugadores() throws DAOException {
         int opcion;
         do {
             System.out.println();
@@ -98,23 +116,27 @@ public class Menu {
             System.out.println(" 0. Volver");
             opcion = leerEntero("Opción: ");
 
-            switch (opcion) {
-                case 1 -> ejecutar(this::crearJugador);
-                case 2 -> ejecutar(this::verJugador);
-                case 3 -> ejecutar(this::listarJugadores);
-                case 4 -> ejecutar(this::cambiarEdadJugador);
-                case 5 -> ejecutar(this::cambiarRolesJugador);
-                case 6 -> ejecutar(this::marcarTitular);
-                case 7 -> ejecutar(this::borrarJugador);
-                case 8 -> ejecutar(this::ficharJugador);
-                case 9 -> ejecutar(this::liberarJugador);
-                case 10 -> ejecutar(this::traspasarJugador);
-                case 11 -> ejecutar(this::jugadoresLibres);
-                case 12 -> ejecutar(this::jugadoresPorJuego);
-                case 13 -> ejecutar(this::plantillaDeEquipo);
-                case 14 -> ejecutar(jugadorDAO::contarJugadores);
-                case 0 -> { }
-                default -> System.out.println("Opción no válida.");
+            try {
+                switch (opcion) {
+                    case 1 -> crearJugador();
+                    case 2 -> verJugador();
+                    case 3 -> listarJugadores();
+                    case 4 -> cambiarEdadJugador();
+                    case 5 -> cambiarRolesJugador();
+                    case 6 -> marcarTitular();
+                    case 7 -> borrarJugador();
+                    case 8 -> ficharJugador();
+                    case 9 -> liberarJugador();
+                    case 10 -> traspasarJugador();
+                    case 11 -> jugadoresLibres();
+                    case 12 -> jugadoresPorJuego();
+                    case 13 -> plantillaDeEquipo();
+                    case 14 -> System.out.println("Hay " + jugadorDAO.contarJugadores() + " jugadores.");
+                    case 0 -> { }
+                    default -> System.out.println("Opción no válida.");
+                }
+            } catch (Exception e) {
+                mostrarError(e);
             }
         } while (opcion != 0);
     }
@@ -177,16 +199,10 @@ public class Menu {
     }
 
     private void marcarTitular() throws Exception {
-        Jugador jugador = jugadorDAO.leerJugador(leerTexto("Nickname: "));
-        if (jugador.isAgenteLibre()) {
-            System.out.println("Es agente libre: sin equipo no puede ser titular.");
-            return;
-        }
-        boolean titular = confirmar("¿Marcar a " + jugador.getNickname() + " como titular de "
-                + jugador.getEquipo() + "? (n = suplente)");
-        jugador.setTitular(titular);
-        jugadorDAO.actualizarJugador(jugador);
-        System.out.println(jugador.getNickname() + (titular ? " es titular." : " es suplente."));
+        String nickname = leerTexto("Nickname: ");
+        boolean titular = confirmar("¿Marcar a " + nickname + " como titular? (n = suplente)");
+        jugadorDAO.cambiarTitularidad(nickname, titular);
+        System.out.println(nickname + (titular ? " es titular." : " es suplente."));
     }
 
     private void borrarJugador() throws Exception {
@@ -213,7 +229,7 @@ public class Menu {
     private void traspasarJugador() throws Exception {
         String nickname = leerTexto("Nickname del jugador: ");
         Equipo destino = equipoDAO.leer(leerTexto("Nombre del equipo destino: "));
-        jugadorDAO.transpasarJugador(nickname, destino);
+        jugadorDAO.traspasarJugador(nickname, destino);
         System.out.println(nickname + " traspasado a " + destino.getNombre() + ".");
     }
 
@@ -251,17 +267,21 @@ public class Menu {
             System.out.println("0. Volver");
             opcion = leerEntero("Opción: ");
 
-            switch (opcion) {
-                case 1 -> ejecutar(this::crearEquipo);
-                case 2 -> ejecutar(this::verEquipo);
-                case 3 -> ejecutar(this::listarEquipos);
-                case 4 -> ejecutar(this::actualizarEquipo);
-                case 5 -> ejecutar(this::borrarEquipo);
-                case 6 -> ejecutar(this::equiposPorJuego);
-                case 7 -> ejecutar(this::buscarEquipos);
-                case 8 -> ejecutar(this::equiposDeOrganizacion);
-                case 0 -> { }
-                default -> System.out.println("Opción no válida.");
+            try {
+                switch (opcion) {
+                    case 1 -> crearEquipo();
+                    case 2 -> verEquipo();
+                    case 3 -> listarEquipos();
+                    case 4 -> actualizarEquipo();
+                    case 5 -> borrarEquipo();
+                    case 6 -> equiposPorJuego();
+                    case 7 -> buscarEquipos();
+                    case 8 -> equiposDeOrganizacion();
+                    case 0 -> { }
+                    default -> System.out.println("Opción no válida.");
+                }
+            } catch (Exception e) {
+                mostrarError(e);
             }
         } while (opcion != 0);
     }
@@ -294,9 +314,11 @@ public class Menu {
 
     private void borrarEquipo() throws Exception {
         String nombre = leerTexto("Nombre del equipo a borrar: ");
+        equipoDAO.leer(nombre);   // si no existe, salta NoEncontradoException antes de preguntar
         if (confirmar("¿Seguro que quieres borrar " + nombre + "?")) {
+            jugadorDAO.liberarJugadoresDeEquipo(nombre);
             equipoDAO.borrar(nombre);
-            System.out.println("Equipo borrado.");
+            System.out.println("Equipo borrado. Sus jugadores son ahora agentes libres.");
         }
     }
 
@@ -336,18 +358,22 @@ public class Menu {
             System.out.println("0. Volver");
             opcion = leerEntero("Opción: ");
 
-            switch (opcion) {
-                case 1 -> ejecutar(this::crearTorneo);
-                case 2 -> ejecutar(this::verTorneo);
-                case 3 -> ejecutar(this::listarTorneos);
-                case 4 -> ejecutar(this::borrarTorneo);
-                case 5 -> ejecutar(this::inscribirEquipo);
-                case 6 -> ejecutar(this::iniciarTorneo);
-                case 7 -> ejecutar(this::finalizarTorneo);
-                case 8 -> ejecutar(this::torneosPorJuego);
-                case 9 -> ejecutar(this::torneosPorEstado);
-                case 0 -> { }
-                default -> System.out.println("Opción no válida.");
+            try {
+                switch (opcion) {
+                    case 1 -> crearTorneo();
+                    case 2 -> verTorneo();
+                    case 3 -> listarTorneos();
+                    case 4 -> borrarTorneo();
+                    case 5 -> inscribirEquipo();
+                    case 6 -> iniciarTorneo();
+                    case 7 -> finalizarTorneo();
+                    case 8 -> torneosPorJuego();
+                    case 9 -> torneosPorEstado();
+                    case 0 -> { }
+                    default -> System.out.println("Opción no válida.");
+                }
+            } catch (Exception e) {
+                mostrarError(e);
             }
         } while (opcion != 0);
     }
@@ -433,20 +459,24 @@ public class Menu {
             System.out.println(" 0. Volver");
             opcion = leerEntero("Opción: ");
 
-            switch (opcion) {
-                case 1 -> ejecutar(this::listarPartidas);
-                case 2 -> ejecutar(this::verPartida);
-                case 3 -> ejecutar(this::partidasDeTorneo);
-                case 4 -> ejecutar(this::partidasDeEquipo);
-                case 5 -> ejecutar(this::partidasPorEstado);
-                case 6 -> ejecutar(this::proximaPartida);
-                case 7 -> ejecutar(this::anadirJugadorAPartida);
-                case 8 -> ejecutar(this::registrarResultado);
-                case 9 -> ejecutar(this::partidasGanadas);
-                case 10 -> ejecutar(this::partidasJugadas);
-                case 11 -> ejecutar(this::borrarPartida);
-                case 0 -> { }
-                default -> System.out.println("Opción no válida.");
+            try {
+                switch (opcion) {
+                    case 1 -> listarPartidas();
+                    case 2 -> verPartida();
+                    case 3 -> partidasDeTorneo();
+                    case 4 -> partidasDeEquipo();
+                    case 5 -> partidasPorEstado();
+                    case 6 -> proximaPartida();
+                    case 7 -> anadirJugadorAPartida();
+                    case 8 -> registrarResultado();
+                    case 9 -> partidasGanadas();
+                    case 10 -> partidasJugadas();
+                    case 11 -> borrarPartida();
+                    case 0 -> { }
+                    default -> System.out.println("Opción no válida.");
+                }
+            } catch (Exception e) {
+                mostrarError(e);
             }
         } while (opcion != 0);
     }
@@ -534,12 +564,16 @@ public class Menu {
             System.out.println(" los DAO no encontrarán sus ficheros hasta que la devuelvas a su sitio.)");
             opcion = leerEntero("Opción: ");
 
-            switch (opcion) {
-                case 1 -> ejecutar(this::verCarpeta);
-                case 2 -> ejecutar(this::moverFichero);
-                case 3 -> ejecutar(this::renombrarCarpeta);
-                case 0 -> { }
-                default -> System.out.println("Opción no válida.");
+            try {
+                switch (opcion) {
+                    case 1 -> verCarpeta();
+                    case 2 -> moverFichero();
+                    case 3 -> renombrarCarpeta();
+                    case 0 -> { }
+                    default -> System.out.println("Opción no válida.");
+                }
+            } catch (Exception e) {
+                mostrarError(e);
             }
         } while (opcion != 0);
     }
@@ -575,34 +609,6 @@ public class Menu {
         String nuevoNombre = leerTexto("Nuevo nombre: ");
         GestorFicheros.renombrarCarpeta(carpeta, nuevoNombre);
         System.out.println("Carpeta renombrada a " + nuevoNombre + ".");
-    }
-
-    // =====================================================================
-    //  GESTIÓN DE ERRORES (un único sitio para todas las opciones)
-    // =====================================================================
-
-    /** Ejecuta una opción del menú y, si falla, muestra el motivo y vuelve al menú sin caerse. */
-    private void ejecutar(Accion accion) {
-        try {
-            accion.ejecutar();
-        } catch (NoEncontradoException e) {
-            System.out.println("No encontrado: " + e.getMessage());
-        } catch (DuplicadoException e) {
-            System.out.println("Ya existe: " + e.getMessage());
-        } catch (ReglaDeNegocioException e) {
-            // Va ANTES que DAOException porque es una subclase suya.
-            System.out.println("No permitido: " + e.getMessage());
-        } catch (DAOException e) {
-            System.out.println("Error de datos: " + e.getMessage()
-                    + (e.getCause() != null ? " (" + e.getCause().getMessage() + ")" : ""));
-        } catch (IOException e) {
-            System.out.println("Error de ficheros: " + e.getMessage());
-        } catch (RuntimeException e) {
-            // IllegalArgumentException de los setters del modelo, ResultadoInvalidoException, etc.
-            System.out.println("Dato no válido: " + e.getMessage());
-        } catch (Exception e) {
-            System.out.println("Error inesperado: " + e.getMessage());
-        }
     }
 
     // =====================================================================

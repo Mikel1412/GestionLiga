@@ -1,2 +1,15 @@
 [
+    {
+        "nombre": "COPA AMERICA",
+        "juego": "Valorant",
+        "formato": "BO3",
+        "fechaI": "2025-10-04",
+        "fechaF": "2025-10-08",
+        "maxEquipos": 2,
+        "estado": "FINALIZADO",
+        "equipos": [
+            "G2",
+            "NOVA"
+        ]
+    }
 ]

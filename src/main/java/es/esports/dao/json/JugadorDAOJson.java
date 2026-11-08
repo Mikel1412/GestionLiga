@@ -4,6 +4,10 @@ import es.esports.dao.JugadorDAO;
 import es.esports.excepciones.DAOException;
 import es.esports.excepciones.DuplicadoException;
 import es.esports.excepciones.NoEncontradoException;
+import es.esports.excepciones.reglaNegocioException.JuegoIncompatibleException;
+import es.esports.excepciones.reglaNegocioException.JugadorSinEquipoException;
+import es.esports.excepciones.reglaNegocioException.JugadorYaFichadoException;
+import es.esports.excepciones.reglaNegocioException.PlantillaLlenaException;
 import es.esports.modelo.Equipo;
 import es.esports.modelo.Juego;
 import es.esports.modelo.Jugador;
@@ -24,6 +28,8 @@ import java.util.Map;
 public class JugadorDAOJson implements JugadorDAO {
 
     private final File fichero;   // por ejemplo new File("datos/jugador.json")
+    private static final int MAX_TITULARES = 5;
+    private static final int MAX_PLANTILLA = 7;
 
     public JugadorDAOJson(File fichero) throws DAOException {
         if (fichero == null) {
@@ -68,6 +74,9 @@ public class JugadorDAOJson implements JugadorDAO {
                         equipo
                 );
 
+                if (jugador.getEquipo() != null && o.containsKey("titular")) {
+                    jugador.setTitular(o.getBoolean("titular"));
+                }
 
                 jugadores.add(jugador);
             }
@@ -80,28 +89,34 @@ public class JugadorDAOJson implements JugadorDAO {
     }
 
 
-    // ---------- ESCRIBIR: lista de Equipo -> fichero ----------
+    // ---------- ESCRIBIR: lista de Jugador -> fichero ----------
 
 
     private void guardar(List<Jugador> jugadores) throws DAOException {
 
-        // 1. Construir el array JSON, equipo por equipo
+        // 1. Construir el array JSON, jugador por jugador
         JsonArrayBuilder array = Json.createArrayBuilder();
         for (Jugador j : jugadores) {
-            array.add(Json.createObjectBuilder()
+            JsonObjectBuilder o = Json.createObjectBuilder()
                     .add("nombre", j.getNombre())
                     .add("apellido1", j.getApellido1())
                     .add("apellido2", j.getApellido2())
                     .add("nickname", j.getNickname())
                     .add("edad", j.getEdad())
-                    .add("juego", j.getJuego().name())   // el enum se guarda como texto
-                    .add("rol1", j.getRol1().name()));
+                    .add("juego", j.getJuego().name())
+                    .add("rol1", j.getRol1().name())
+                    .add("titular", j.isTitular());
             if (j.getRol2() != null) {
-                array.add(Json.createObjectBuilder().add("rol2", j.getRol2().name()));
+                o.add("rol2", j.getRol2().name());
+            } else {
+                o.addNull("rol2");
             }
             if (j.getEquipo() != null) {
-                array.add(Json.createObjectBuilder().add("equipo", j.getEquipo()));
+                o.add("equipo", j.getEquipo());
+            } else {
+                o.addNull("equipo");
             }
+            array.add(o);
         }
 
         // 2. Escribirlo en el fichero
@@ -121,6 +136,32 @@ public class JugadorDAOJson implements JugadorDAO {
 
     //================Metodos Auxiliares=============
 
+    private void asignarEquipo(List<Jugador> jugadores, Jugador jugador, Equipo equipo)
+            throws JuegoIncompatibleException, PlantillaLlenaException {
+        if (jugador.getJuego() != equipo.getJuego()) {
+            throw new JuegoIncompatibleException("El jugador " + jugador.getNickname() + " juega a "
+                    + jugador.getJuego() + " y el equipo " + equipo.getNombre() + " es de " + equipo.getJuego());
+        }
+
+        int total = 0;
+        int titulares = 0;
+        for (Jugador j : jugadores) {
+            if (j.getEquipo() != null && j.getEquipo().equalsIgnoreCase(equipo.getNombre())) {
+                total++;
+                if (j.isTitular()) {
+                    titulares++;
+                }
+            }
+        }
+        if (total >= MAX_PLANTILLA) {
+            throw new PlantillaLlenaException("El equipo " + equipo.getNombre()
+                    + " ya tiene " + MAX_PLANTILLA + " jugadores");
+        }
+
+        jugador.setEquipo(equipo.getNombre());
+        jugador.setTitular(titulares < MAX_TITULARES);   // hasta 5 entran de titulares; los 2 siguientes, de sustitutos
+    }
+
     private int buscarPosicion(List<Jugador> jugadores, String nombre) {
         for (int i = 0; i < jugadores.size(); i++) {
             if (jugadores.get(i).getNickname().equalsIgnoreCase(nombre)) {
@@ -139,21 +180,19 @@ public class JugadorDAOJson implements JugadorDAO {
 
     @Override
     public void crearJugador(Jugador jugador) throws DuplicadoException, DAOException {
-        if(jugador == null){
+        if (jugador == null) {
             throw new IllegalArgumentException("El jugador no puede ser NULO");
+        }
+        if (jugador.getEquipo() != null) {
+            throw new IllegalArgumentException("Un jugador nuevo se crea sin equipo: usa ficharPorEquipo");
         }
 
         List<Jugador> jugadores = cargar();
-
-        int posicion = buscarPosicion(jugadores, jugador.getNickname());
-
-        if (posicion != -1){
-            throw new DuplicadoException("jugador " + jugador.getNickname());
-        } else {
-            jugadores.add(jugador);
-            guardar(jugadores);
-            System.out.println("Jugador creado y guardado");
+        if (buscarPosicion(jugadores, jugador.getNickname()) != -1) {
+            throw new DuplicadoException("jugador " +jugador.getNickname());
         }
+        jugadores.add(jugador);
+        guardar(jugadores);
     }
 
     @Override
@@ -164,39 +203,41 @@ public class JugadorDAOJson implements JugadorDAO {
 
         int posicion = buscarPosicion(jugadores, buscado);
         if (posicion == -1) {
-            throw new NoEncontradoException("El jugador no existe en la lista");
+            throw new NoEncontradoException("jugador " +buscado);
         }
 
         return jugadores.get(posicion);
     }
 
     @Override
-    public List<Jugador> leerTodosJugadores() throws NoEncontradoException, DAOException {
+    public List<Jugador> leerTodosJugadores() throws DAOException {
         return cargar();
     }
 
     @Override
     public void actualizarJugador(Jugador jugador) throws NoEncontradoException, DAOException {
-        if (jugador == null){
+        if (jugador == null) {
             throw new IllegalArgumentException("El jugador no puede ser NULO");
-        } else {
-            List<Jugador> jugadores = cargar();
-
-            int posicion = buscarPosicion(jugadores, jugador.getNickname());
-
-            if (posicion == -1){
-                throw new NoEncontradoException("No se ha encontrado el jugador en la lista");
-            }
-
-            jugadores.set(posicion, jugador);
-
-            guardar(jugadores);
         }
+
+        List<Jugador> jugadores = cargar();
+        int posicion = buscarPosicion(jugadores, jugador.getNickname());
+        if (posicion == -1) {
+            throw new NoEncontradoException("jugador" +jugador.getNickname());
+        }
+
+        // El equipo y la titularidad no se cambian aquí (para eso están fichar, liberar y traspasar)
+        Jugador guardado = jugadores.get(posicion);
+        jugador.setEquipo(guardado.getEquipo());
+        jugador.setTitular(guardado.isTitular());
+
+        jugadores.set(posicion, jugador);
+        guardar(jugadores);
     }
 
     @Override
-    public void borrarJugador(String nombre) throws DAOException, NoEncontradoException {
-        String textoLimpio = limpiarTexto(nombre);
+    public void borrarJugador(String nickname) throws DAOException, NoEncontradoException {
+        String textoLimpio = limpiarTexto(nickname);
 
         boolean encontrado = false;
 
@@ -213,7 +254,7 @@ public class JugadorDAOJson implements JugadorDAO {
         }
 
         if (!encontrado) {
-            throw new NoEncontradoException("No se ha encontrado el jugador para borrar");
+            throw new NoEncontradoException("jugador" +textoLimpio);
         }
 
         guardar(jugadores);
@@ -222,12 +263,8 @@ public class JugadorDAOJson implements JugadorDAO {
     //==============Operaciones no CRUD==================
 
     @Override
-    public void contarJugadores() throws DAOException {
-        List<Jugador> jugadores = cargar();
-
-        int numJugadores = jugadores.size();
-
-        System.out.println("Actualmente hay " + numJugadores + " jugadores");
+    public int contarJugadores() throws DAOException {
+        return cargar().size();
     }
 
     @Override
@@ -250,6 +287,9 @@ public class JugadorDAOJson implements JugadorDAO {
 
     @Override
     public List<Jugador> buscarJugadorPorJuego(Juego juego) throws DAOException {
+        if (juego == null) {
+            throw new IllegalArgumentException("El juego no puede ser NULO");
+        }
         List<Jugador> jugadores = cargar();
 
         List<Jugador> jugadoresJuego = new ArrayList<>();
@@ -267,47 +307,43 @@ public class JugadorDAOJson implements JugadorDAO {
     }
 
     @Override
-    public void ficharPorEquipo(String nickname, Equipo equipo) throws NoEncontradoException, DAOException {
+    public void ficharPorEquipo(String nickname, Equipo equipo)
+            throws NoEncontradoException, JugadorYaFichadoException, JuegoIncompatibleException,
+            PlantillaLlenaException, DAOException {
         if (equipo == null) {
             throw new IllegalArgumentException("El equipo no puede ser NULO");
         }
         String nick = limpiarTexto(nickname);
 
         List<Jugador> jugadores = cargar();
-
         int posicion = buscarPosicion(jugadores, nick);
         if (posicion == -1) {
-            throw new NoEncontradoException("jugador " + nick);
+            throw new NoEncontradoException("jugador " +nick);
         }
 
         Jugador jugador = jugadores.get(posicion);
-
         if (jugador.getEquipo() != null) {
-            throw new IllegalStateException("El jugador " + nick + " ya tiene equipo");
-        }
-        if (!jugador.getJuego().equals(equipo.getJuego())) {
-            throw new IllegalStateException("El equipo y el jugador no son del mismo juego");
+            throw new JugadorYaFichadoException("El jugador " + nick + " ya tiene equipo: " + jugador.getEquipo());
         }
 
-        jugador.setEquipo(equipo.getNombre());
+        asignarEquipo(jugadores, jugador, equipo);
         guardar(jugadores);
     }
 
     @Override
-    public void liberarJugador(String nickname) throws NoEncontradoException, DAOException {
+    public void liberarJugador(String nickname)
+            throws NoEncontradoException, JugadorSinEquipoException, DAOException {
         String nick = limpiarTexto(nickname);
 
         List<Jugador> jugadores = cargar();
-
         int posicion = buscarPosicion(jugadores, nick);
         if (posicion == -1) {
-            throw new NoEncontradoException("jugador " + nick);
+            throw new NoEncontradoException("jugador " +nick);
         }
 
         Jugador jugador = jugadores.get(posicion);
-
         if (jugador.getEquipo() == null) {
-            throw new IllegalStateException("El jugador " + nick + " ya esta libre");
+            throw new JugadorSinEquipoException("El jugador " + nick + " ya es agente libre");
         }
 
         jugador.setEquipo(null);
@@ -315,27 +351,89 @@ public class JugadorDAOJson implements JugadorDAO {
     }
 
     @Override
-    public void transpasarJugador(String nickname, Equipo nueovEquipo) throws NoEncontradoException, DAOException {
-        liberarJugador(nickname);
-        ficharPorEquipo(nickname, nueovEquipo);
+    public void traspasarJugador(String nickname, Equipo nuevoEquipo)
+            throws NoEncontradoException, JugadorSinEquipoException, JugadorYaFichadoException,
+            JuegoIncompatibleException, PlantillaLlenaException, DAOException {
+        if (nuevoEquipo == null) {
+            throw new IllegalArgumentException("El equipo no puede ser NULO");
+        }
+        String nick = limpiarTexto(nickname);
+
+        List<Jugador> jugadores = cargar();
+        int posicion = buscarPosicion(jugadores, nick);
+        if (posicion == -1) {
+            throw new NoEncontradoException("jugador " +nick);
+        }
+
+        Jugador jugador = jugadores.get(posicion);
+        if (jugador.getEquipo() == null) {
+            throw new JugadorSinEquipoException("El jugador " + nick + " es agente libre: usa ficharPorEquipo");
+        }
+        if (jugador.getEquipo().equalsIgnoreCase(nuevoEquipo.getNombre())) {
+            throw new JugadorYaFichadoException("El jugador " + nick + " ya está en " + nuevoEquipo.getNombre());
+        }
+
+        asignarEquipo(jugadores, jugador, nuevoEquipo);
+        guardar(jugadores);
     }
 
     @Override
-    public List<Jugador> jugadoresDeEquipo(String equipo) throws NoEncontradoException, DAOException{
+    public List<Jugador> jugadoresDeEquipo(String equipo) throws DAOException {
+        String buscado = limpiarTexto(equipo);
+
+        List<Jugador> resultado = new ArrayList<>();
+        for (Jugador j : cargar()) {
+            if (j.getEquipo() != null && j.getEquipo().equalsIgnoreCase(buscado)) {
+                resultado.add(j);
+            }
+        }
+        return resultado;
+    }
+
+    @Override
+    public void liberarJugadoresDeEquipo(String equipo) throws DAOException {
+        String buscado = limpiarTexto(equipo);
+
         List<Jugador> jugadores = cargar();
+        for (Jugador j : jugadores) {
+            if (j.getEquipo() != null && j.getEquipo().equalsIgnoreCase(buscado)) {
+                j.setEquipo(null);
+            }
+        }
+        guardar(jugadores);
+    }
 
-        List<Jugador> jugadoresEquipo = new ArrayList<>();
+    @Override
+    public void cambiarTitularidad(String nickname, boolean titular)
+            throws NoEncontradoException, JugadorSinEquipoException, PlantillaLlenaException, DAOException {
+        String nick = limpiarTexto(nickname);
 
-        Iterator<Jugador> it = jugadores.iterator();
+        List<Jugador> jugadores = cargar();
+        int posicion = buscarPosicion(jugadores, nick);
+        if (posicion == -1) {
+            throw new NoEncontradoException("jugador "+ nick);
+        }
 
-        while (it.hasNext()){
-            Jugador j = it.next();
-            if (j.getEquipo().equalsIgnoreCase(equipo)){
-                jugadoresEquipo.add(j);
+        Jugador jugador = jugadores.get(posicion);
+        if (jugador.getEquipo() == null) {
+            throw new JugadorSinEquipoException("El jugador " + nick + " es agente libre: sin equipo no puede ser titular");
+        }
+
+        // Para hacerlo titular, el equipo no puede tener ya 5 titulares
+        if (titular && !jugador.isTitular()) {
+            int titulares = 0;
+            for (Jugador j : jugadores) {
+                if (j.getEquipo() != null && j.getEquipo().equalsIgnoreCase(jugador.getEquipo()) && j.isTitular()) {
+                    titulares++;
+                }
+            }
+            if (titulares >= MAX_TITULARES) {
+                throw new PlantillaLlenaException("El equipo " + jugador.getEquipo() + " ya tiene " + MAX_TITULARES + " titulares");
             }
         }
 
-        return jugadoresEquipo;
+        jugador.setTitular(titular);
+        guardar(jugadores);
     }
 
 }

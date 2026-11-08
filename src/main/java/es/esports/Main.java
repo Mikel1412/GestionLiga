@@ -14,7 +14,7 @@ import es.esports.ui.Menu;
 import java.io.File;
 
 public class Main {
-    static void main() {
+    static void main(String[] args) {
         try {
             EquipoDAO equipoDAO = new EquipoDAOJson(new File("datos/equipos.json"));
             JugadorDAO jugadorDAO = new JugadorDAOJson(new File("datos/jugadores.json"));
@@ -23,7 +23,7 @@ public class Main {
 
             new Menu(jugadorDAO, equipoDAO, torneoDAO, partidaDAO).iniciar();
         } catch (DAOException e) {
-            System.out.println("No se pudo iniciar la aplicación:");
+            System.out.println("No se pudo iniciar la aplicación: " + e.getMessage());
         }
     }
 }

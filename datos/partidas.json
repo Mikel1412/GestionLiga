@@ -1,2 +1,16 @@
 [
+    {
+        "id": 1,
+        "torneo": "COPA AMERICA",
+        "equipo1": "G2",
+        "equipo2": "NOVA",
+        "jugadores1": [
+        ],
+        "jugadores2": [
+        ],
+        "estado": "FINALIZADA",
+        "fecha": "2025-10-04",
+        "juego": "Valorant",
+        "ganador": "G2"
+    }
 ]

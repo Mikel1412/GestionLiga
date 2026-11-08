@@ -3,6 +3,10 @@ package es.esports.dao;
 import es.esports.excepciones.DAOException;
 import es.esports.excepciones.DuplicadoException;
 import es.esports.excepciones.NoEncontradoException;
+import es.esports.excepciones.reglaNegocioException.JuegoIncompatibleException;
+import es.esports.excepciones.reglaNegocioException.JugadorSinEquipoException;
+import es.esports.excepciones.reglaNegocioException.JugadorYaFichadoException;
+import es.esports.excepciones.reglaNegocioException.PlantillaLlenaException;
 import es.esports.modelo.Equipo;
 import es.esports.modelo.Juego;
 import es.esports.modelo.Jugador;
@@ -11,33 +15,35 @@ import java.util.List;
 
 public interface JugadorDAO {
 
-    /*
-    Operaciones CRUD Básicas
-     */
-    public void crearJugador(Jugador jugador) throws DuplicadoException, DAOException;
+    /* Operaciones CRUD Básicas */
+    void crearJugador(Jugador jugador) throws DuplicadoException, DAOException;
 
-    public Jugador leerJugador(String nombre) throws NoEncontradoException, DAOException;
+    Jugador leerJugador(String nickname) throws NoEncontradoException, DAOException;
 
-    List<Jugador> leerTodosJugadores() throws NoEncontradoException, DAOException;
+    List<Jugador> leerTodosJugadores() throws DAOException;
 
-    public void actualizarJugador(Jugador jugador) throws NoEncontradoException, DAOException;
+    void actualizarJugador(Jugador jugador) throws NoEncontradoException, DAOException;
 
-    public void borrarJugador(String nomrbe) throws DAOException, NoEncontradoException;
+    void borrarJugador(String nickname) throws NoEncontradoException, DAOException;
 
-    //Operaciones no crud
+    // Operaciones no CRUD
+    int contarJugadores() throws DAOException;
+    // ahora DEVUELVE el número
+    List<Jugador> jugadoresLibres() throws DAOException;
 
-    public void contarJugadores() throws DAOException;
+    List<Jugador> buscarJugadorPorJuego(Juego juego) throws DAOException;
 
-    public List<Jugador> jugadoresLibres() throws DAOException;
+    void ficharPorEquipo(String nickname, Equipo equipo) throws NoEncontradoException, JugadorYaFichadoException, JuegoIncompatibleException, PlantillaLlenaException, DAOException;
 
-    public List<Jugador> buscarJugadorPorJuego(Juego juego) throws DAOException;
+    void liberarJugador(String nickname) throws NoEncontradoException, JugadorSinEquipoException, DAOException;
 
-    public void ficharPorEquipo(String nickname, Equipo equipo) throws NoEncontradoException, DAOException;
+    void traspasarJugador(String nickname, Equipo nuevoEquipo) throws NoEncontradoException, JugadorSinEquipoException, JugadorYaFichadoException, JuegoIncompatibleException, PlantillaLlenaException, DAOException;
 
-    public void liberarJugador(String nickname) throws NoEncontradoException, DAOException;
+    List<Jugador> jugadoresDeEquipo(String equipo) throws DAOException;
 
-    public void transpasarJugador(String nickname, Equipo nuevoEquipo) throws NoEncontradoException, DAOException;
+    //Este lo necesita el menú al borrar un equipo (los jugadores quedan libres)
+    void liberarJugadoresDeEquipo(String equipo) throws DAOException;
 
-    public List<Jugador> jugadoresDeEquipo(String equipo) throws NoEncontradoException, DAOException;
+    void cambiarTitularidad(String nickname, boolean titular) throws NoEncontradoException, JugadorSinEquipoException, PlantillaLlenaException, DAOException;
 }
 

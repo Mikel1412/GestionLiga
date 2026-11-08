@@ -4,5 +4,17 @@
         "tag": "G2A",
         "juego": "Valorant",
         "organizacion": "jsdfg"
+    },
+    {
+        "nombre": "G2",
+        "tag": "G22",
+        "juego": "Valorant",
+        "organizacion": "G2"
+    },
+    {
+        "nombre": "NOVA",
+        "tag": "NOVAE",
+        "juego": "Valorant",
+        "organizacion": "NOVAS"
     }
 ]
