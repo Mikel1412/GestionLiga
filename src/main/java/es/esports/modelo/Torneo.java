@@ -10,6 +10,13 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Un torneo de un juego, con formato, fechas y un máximo de equipos.
+ * <p>
+ * Guarda los equipos inscritos por su nombre (no los objetos {@code Equipo}).
+ * Nace en estado {@link EstadoTorneo#PREPARACION}, pasa a {@code ACTIVO} al iniciarse
+ * y a {@code FINALIZADO} al terminar. Las fechas son textos con formato {@code aaaa-mm-dd}.
+ */
 public class Torneo {
 
     private String nombre;
@@ -21,6 +28,17 @@ public class Torneo {
     private String fechaF;
     private int maxEquipos;
 
+    /**
+     * Crea un torneo en preparación y sin equipos.
+     *
+     * @param nombre     nombre del torneo (su clave); no puede estar vacío
+     * @param juego      juego del torneo; no puede ser {@code null}
+     * @param formato    formato de cada enfrentamiento (BO1, BO3 o BO5); no puede ser {@code null}
+     * @param fechaI     fecha de inicio ({@code aaaa-mm-dd})
+     * @param fechaF     fecha de fin ({@code aaaa-mm-dd}); no puede ser anterior a la de inicio
+     * @param maxEquipos máximo de equipos inscritos; mínimo 2
+     * @throws IllegalArgumentException si algún argumento no es válido
+     */
     public Torneo(String nombre, Juego juego, Formato formato, String fechaI, String fechaF, int maxEquipos) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre del torneo es obligatorio");
@@ -64,6 +82,15 @@ public class Torneo {
 
     // ===Reglas del torneo===
 
+    /**
+     * Inscribe un equipo (por su nombre) en el torneo.
+     *
+     * @param nombreEquipo nombre del equipo; no puede estar vacío
+     * @throws EstadoTorneoException       si el torneo no está en preparación
+     * @throws EquipoYaInscritoException   si el equipo ya está inscrito
+     * @throws PlantillaLlenaException     si el torneo ya tiene el máximo de equipos
+     * @throws IllegalArgumentException    si el nombre está vacío
+     */
     public void anadirEquipo(String nombreEquipo)
             throws EstadoTorneoException, EquipoYaInscritoException, PlantillaLlenaException {
         if (nombreEquipo == null || nombreEquipo.isBlank()) {
@@ -87,6 +114,12 @@ public class Torneo {
         equipos.add(nombreLimpio);
     }
 
+    /**
+     * Pasa el torneo de preparación a activo.
+     *
+     * @throws EstadoTorneoException         si el torneo no está en preparación
+     * @throws EquiposInsuficientesException si hay menos de 2 equipos inscritos
+     */
     public void iniciar() throws EstadoTorneoException, EquiposInsuficientesException {
         if (estado != EstadoTorneo.PREPARACION) {
             throw new EstadoTorneoException("Solo se puede iniciar un torneo que está en preparación");
@@ -97,6 +130,11 @@ public class Torneo {
         estado = EstadoTorneo.ACTIVO;
     }
 
+    /**
+     * Pasa el torneo de activo a finalizado.
+     *
+     * @throws EstadoTorneoException si el torneo no está activo
+     */
     public void finalizar() throws EstadoTorneoException {
         if (estado != EstadoTorneo.ACTIVO) {
             throw new EstadoTorneoException("Solo se puede finalizar un torneo que está activo");
@@ -108,6 +146,9 @@ public class Torneo {
 
     public String getNombre() { return nombre; }
     public EstadoTorneo getEstado() { return estado; }
+    /**
+     * Devuelve una copia de la lista de equipos inscritos (modificarla no cambia el torneo).
+     */
     public List<String> getEquipos() { return List.copyOf(equipos); }
     public Juego getJuego() { return juego; }
     public Formato getFormato() { return formato; }
@@ -115,6 +156,7 @@ public class Torneo {
     public String getFechaF() { return fechaF; }
     public int getMaxEquipos() { return maxEquipos; }
 
+    /** Restaura el estado al leer el torneo del fichero. Lo usa el DAO. */
     // Los usa el DAO al leer el JSON para restaurar el estado y los inscritos
     public void setEstado(EstadoTorneo estado) {
         if (estado == null) {
@@ -123,6 +165,7 @@ public class Torneo {
         this.estado = estado;
     }
 
+    /** Restaura los equipos inscritos al leer el torneo del fichero. Lo usa el DAO. */
     public void setEquipos(List<String> nombres) {
         this.equipos = new ArrayList<>(nombres);
     }

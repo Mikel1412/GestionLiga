@@ -11,7 +11,12 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Un enfrentamiento entre dos equipos dentro de un torneo.
+ * <p>
+ * Guarda los equipos y los jugadores que participan por su nombre y nickname (no los objetos).
+ * Nace pendiente; al registrar el ganador pasa a finalizada. El id lo asigna el DAO al guardarla.
+ */
 public class Partida {
     private static final int MAX_JUGADORES = 5;
 
@@ -31,6 +36,16 @@ public class Partida {
     //Los dos equipos son obligatorios y no puede jugar un mismo equipo contra otro
     //El juego tambien es obligatorio, y la partida empieza con ganador en null y estado de juego pendiente, porque aun no se sabe como acaba.
 
+    /**
+     * Crea una partida pendiente.
+     *
+     * @param torneo  nombre del torneo; no puede estar vacío
+     * @param equipo1 nombre del primer equipo; no puede estar vacío
+     * @param equipo2 nombre del segundo equipo; no puede estar vacío ni ser el mismo que el primero
+     * @param fecha   fecha ({@code aaaa-mm-dd})
+     * @param juego   juego de la partida; no puede ser {@code null}
+     * @throws IllegalArgumentException si algún argumento no es válido
+     */
     public Partida(String torneo, String equipo1, String equipo2, String fecha, Juego juego) {
         setTorneo(torneo);
         if (equipo1 == null || equipo1.isBlank() || equipo2 == null || equipo2.isBlank()) {
@@ -53,6 +68,16 @@ public class Partida {
     //AñadirJugador solo compara los dos textos: si jugador.getEquipo() coincide con equipo1, va a la lista 1.
     //Si coincide con equipo2, a la lista 2. Si no coincide con ninguno, o es null, salta JugadorIncompatibleException.
 
+    /**
+     * Añade un jugador a la alineación del equipo al que pertenece. Cada equipo
+     * puede alinear como máximo 5 jugadores.
+     *
+     * @param jugador el jugador; no puede ser {@code null} ni estar ya en la partida
+     * @throws JuegoIncompatibleException si el jugador juega a otro juego
+     * @throws JugadorIncompatibleException si el jugador es agente libre o no es de ninguno de los dos equipos
+     * @throws PlantillaLlenaException    si su equipo ya tiene 5 jugadores en la partida
+     * @throws IllegalArgumentException   si el jugador es {@code null} o ya está en la partida
+     */
     public void anadirJugador(Jugador jugador)
             throws JugadorIncompatibleException, PlantillaLlenaException, JuegoIncompatibleException {
         if (jugador == null) {
@@ -105,6 +130,12 @@ public class Partida {
 
     //Un set para luego establecer al ganador de esta partida si el estado de la partida no es finalizado aun y cumple con que no sea null
     //Comprueba que el equipo que introducimos por parametro es alguno de estos dos y lo establece como ganador de la partida, si introducimos otro equipo que no es alguno de los dos que jugaron, nos lanzará una excepción
+    /**
+     * Registra el equipo ganador y finaliza la partida.
+     *
+     * @param ganador nombre de uno de los dos equipos de la partida
+     * @throws ResultadoInvalidoException si la partida ya está finalizada o el ganador no es ninguno de los dos equipos
+     */
     public void setGanador(String ganador) throws ResultadoInvalidoException {
         if (estado == EstadoPartida.FINALIZADA) {
             throw new ResultadoInvalidoException("La partida ya está finalizada");
@@ -151,11 +182,13 @@ public class Partida {
     //Para que el DAO pueda reconstruir una partida al leer el fichero.
     //necesita estos dos de abajo
 
+    /** Restaura la alineación del equipo 1 al leer la partida del fichero. Lo usa el DAO. */
     public void setJugadores1(List<String> nicknames) {
         if (nicknames == null) throw new IllegalArgumentException("La alineación no puede ser null");
         jugadores1 = new ArrayList<>(nicknames);
     }
 
+    /** Restaura la alineación del equipo 2 al leer la partida del fichero. Lo usa el DAO. */
     public void setJugadores2(List<String> nicknames) {
         if (nicknames == null) throw new IllegalArgumentException("La alineación no puede ser null");
         jugadores2 = new ArrayList<>(nicknames);
@@ -167,6 +200,12 @@ public class Partida {
     public String getFecha() { return fecha; }
 
     //Metodo para comprobar que la fecha metida por String es una fecha valida y ya
+    /**
+     * Establece la fecha de la partida.
+     *
+     * @param fecha fecha con formato {@code aaaa-mm-dd}
+     * @throws IllegalArgumentException si está vacía o no es una fecha real
+     */
     public void setFecha(String fecha) {
         if (fecha == null || fecha.isBlank()) {
             throw new IllegalArgumentException("La fecha es obligatoria");

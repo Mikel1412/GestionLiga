@@ -1,9 +1,11 @@
 package es.esports.modelo;
 
 /**
- * Plantilla competitiva de una organización en un juego concreto.
- * Su clave es el nombre. Los jugadores no se guardan aquí: cada Jugador
- * referencia a su equipo por nombre (ver JugadorDAO).
+ * Un equipo de la liga, identificado por su nombre. Juega a un único juego y pertenece
+ * a una organización (una organización puede tener un equipo por juego).
+ * <p>
+ * No guarda a sus jugadores: cada {@code Jugador} apunta a su equipo, y la plantilla
+ * se obtiene consultando al {@code JugadorDAO}.
  */
 public class Equipo {
 
@@ -12,6 +14,15 @@ public class Equipo {
     private Juego juego;
     private String organizacion;
 
+    /**
+     * Crea un equipo.
+     *
+     * @param nombre       nombre (su clave); no puede estar vacío
+     * @param tag          abreviatura de 2 a 5 caracteres
+     * @param juego        juego del equipo; no puede ser {@code null}
+     * @param organizacion organización a la que pertenece; no puede estar vacía
+     * @throws IllegalArgumentException si algún argumento no es válido
+     */
     public Equipo(String nombre, String tag, Juego juego, String organizacion) {
         setNombre(nombre);
         setTag(tag);
@@ -34,6 +45,12 @@ public class Equipo {
         return tag;
     }
 
+    /**
+     * Establece el tag del equipo.
+     *
+     * @param tag abreviatura de 2 a 5 caracteres
+     * @throws IllegalArgumentException si está vacío o su longitud no es de 2 a 5 caracteres
+     */
     public void setTag(String tag) {
         if (tag == null || tag.isBlank()) {
             throw new IllegalArgumentException("El tag es obligatorio");

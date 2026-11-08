@@ -2,6 +2,12 @@ package es.esports.modelo;
 
 import es.esports.excepciones.reglaNegocioException.RolInvalidoException;
 
+/**
+ * Un jugador de la liga (League of Legends o Valorant), identificado por su nickname.
+ * <p>
+ * Guarda el nombre de su equipo como texto: si es {@code null}, el jugador es agente libre.
+ * No guarda a qué plantilla pertenece dentro del equipo más que si es titular o sustituto.
+ */
 public class Jugador {
 
     private String nombre;
@@ -22,6 +28,22 @@ public class Jugador {
 
     // CONSTRUCTOR LOL
     // Este seria un constructor para los jugadores de LoL, porque si o si se piden dos roles.
+    /**
+     * Crea un jugador con dos roles (obligatorio en League of Legends; opcional en Valorant
+     * pasando {@code null}) y, opcionalmente, un equipo.
+     *
+     * @param nombre    nombre; no puede estar vacío
+     * @param apellido1 primer apellido; no puede estar vacío
+     * @param apellido2 segundo apellido; {@code null} se guarda como cadena vacía
+     * @param nickname  nickname (su clave); no puede estar vacío
+     * @param edad      edad, entre 16 y 60
+     * @param juego     juego al que juega; no puede ser {@code null}
+     * @param rol1      rol principal; obligatorio y del mismo juego
+     * @param rol2      segundo rol; obligatorio en League of Legends, opcional en Valorant
+     * @param equipo    nombre del equipo, o {@code null} si es agente libre
+     * @throws RolInvalidoException     si los roles no cumplen las reglas del juego
+     * @throws IllegalArgumentException si algún otro argumento no es válido
+     */
     public Jugador(String nombre, String apellido1, String apellido2, String nickname,
                    int edad, Juego juego, Rol rol1, Rol rol2, String equipo) throws RolInvalidoException {
         setNombre(nombre);          //Todos estos sets son para las comprobaciones de datos erroneos como, nulls, en blanco, y luego si hay espacios sobrantes por los lados, hacer un trim() para limpiarlo.
@@ -36,6 +58,9 @@ public class Jugador {
 
     // CONSTRUCTOR VALORANT
     // Este seria un constructor para jugadores de Valorant, que tienen solo un rol en el momento.
+    /**
+     * Crea un jugador de Valorant con un solo rol. Equivale al constructor completo con {@code rol2 = null}.
+     */
     public Jugador(String nombre, String apellido1, String apellido2, String nickname,
                    int edad, Juego juego, Rol rol1, String equipo) throws RolInvalidoException {
         this(nombre, apellido1, apellido2, nickname, edad, juego, rol1, null, equipo);
@@ -94,6 +119,13 @@ public class Jugador {
     public Rol getRol2() { return rol2; }
 
     // Los dos roles se validan JUNTOS porque las reglas al final dependen de ambos
+    /**
+     * Establece los dos roles, validándolos juntos: el principal es obligatorio y del juego
+     * del jugador; el segundo es obligatorio en League of Legends, opcional en Valorant,
+     * del mismo juego y distinto del principal.
+     *
+     * @throws RolInvalidoException si los roles no cumplen estas reglas
+     */
     public void setRoles(Rol rol1, Rol rol2) throws RolInvalidoException {
         if (rol1 == null) {
             throw new RolInvalidoException("El rol principal es obligatorio");
@@ -120,6 +152,12 @@ public class Jugador {
     }
 
     public String getEquipo() { return equipo; }
+    /**
+     * Establece el equipo del jugador. Con {@code null} el jugador queda libre
+     * y deja de ser titular.
+     *
+     * @throws IllegalArgumentException si el nombre del equipo está vacío
+     */
     public void setEquipo(String equipo) {
         if (equipo == null) {
             this.equipo = null;
@@ -134,6 +172,7 @@ public class Jugador {
     public boolean isTitular() { return titular; }
     public void setTitular(boolean titular) { this.titular = titular; }
 
+    /** Indica si el jugador no tiene equipo. */
     public boolean isAgenteLibre() { return equipo == null; }
 
     @Override
